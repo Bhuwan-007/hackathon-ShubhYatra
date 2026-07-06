@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShieldCheck, ShieldAlert, Users, User, LayoutDashboard } from 'lucide-react';
+import { Home, ShieldCheck, ShieldAlert, Users, User, LayoutDashboard, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
@@ -12,6 +12,7 @@ export default function BottomNav() {
   const links = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/scan', icon: ShieldCheck, label: 'Scan' },
+    { href: '/report', icon: Flag, label: 'Report' },
     { href: '/emergency', icon: ShieldAlert, label: 'Emergency' },
     { href: '/connect', icon: Users, label: 'Connect' },
   ];
