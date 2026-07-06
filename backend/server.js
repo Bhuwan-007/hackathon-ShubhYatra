@@ -35,7 +35,10 @@ app.get('/api/health', (req, res) => {
 
 // Import Routes
 const briefingRoutes = require('./routes/briefing');
+const scanRoutes = require('./routes/scan');
+
 app.use('/api/briefing', briefingRoutes);
+app.use('/api/scan-image', scanRoutes);
 
 const PORT = process.env.PORT || 5000;
 
