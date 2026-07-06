@@ -136,7 +136,7 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
         {shareTimeLeft && (
           <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 flex items-center gap-2 text-sm text-emerald-800 animate-in fade-in">
             <MapPin className="w-4 h-4 shrink-0" />
-            <span className="font-medium truncate">📍 Sharing location: {buddy.currentLocation}</span>
+            <span className="font-medium truncate">Sharing location: {buddy.currentLocation}</span>
             <span className="ml-auto text-xs font-bold text-emerald-600/60 whitespace-nowrap">{shareTimeLeft}</span>
           </div>
         )}

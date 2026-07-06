@@ -108,7 +108,7 @@ export default function Home() {
                       type="button"
                       onClick={() => handleToggleType(type.id)}
                       className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 backdrop-blur-sm",
+                        "px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 backdrop-blur-sm cursor-pointer",
                         isSelected 
                           ? "bg-primary border-primary text-white shadow-md" 
                           : "bg-white/50 border-white/60 text-text-main/70 hover:border-white/80 hover:bg-white/80"

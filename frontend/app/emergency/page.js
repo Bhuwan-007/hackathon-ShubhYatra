@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { fetchEmergencyPlan } from "@/lib/api";
-import { AlertCircle, Phone, Loader2 } from "lucide-react";
+import { AlertCircle, Phone, Loader2, Book, Activity, AlertTriangle, Shield, Map } from "lucide-react";
 
 export default function EmergencyPage() {
   const [location, setLocation] = useState("");
@@ -73,45 +73,45 @@ export default function EmergencyPage() {
           <button 
             onClick={() => handleEmergency('lost_passport')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm"
+            className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm cursor-pointer"
           >
-            {loadingType === 'lost_passport' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🛂</div>}
+            {loadingType === 'lost_passport' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <Book className="w-8 h-8 text-text-main/80 mb-3 group-hover:scale-110 transition-transform" />}
             <span className="font-bold text-base text-text-main/90">Lost Passport</span>
           </button>
           
           <button 
             onClick={() => handleEmergency('medical')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-6 bg-alert/10 backdrop-blur-sm border-2 border-alert/30 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm"
+            className="flex flex-col items-center justify-center p-6 bg-alert/10 backdrop-blur-sm border-2 border-alert/30 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm cursor-pointer"
           >
-            {loadingType === 'medical' ? <Loader2 className="w-8 h-8 animate-spin text-alert/60 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🏥</div>}
+            {loadingType === 'medical' ? <Loader2 className="w-8 h-8 animate-spin text-alert/60 mb-3" /> : <Activity className="w-8 h-8 text-alert mb-3 group-hover:scale-110 transition-transform" />}
             <span className="font-bold text-base text-alert">Medical Help</span>
           </button>
 
           <button 
             onClick={() => handleEmergency('theft')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-6 bg-alert border-2 border-alert hover:bg-alert/90 rounded-2xl transition-all group disabled:opacity-50 shadow-md"
+            className="flex flex-col items-center justify-center p-6 bg-alert border-2 border-alert hover:bg-alert/90 rounded-2xl transition-all group disabled:opacity-50 shadow-md cursor-pointer"
           >
-            {loadingType === 'theft' ? <Loader2 className="w-8 h-8 animate-spin text-white/60 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🚨</div>}
+            {loadingType === 'theft' ? <Loader2 className="w-8 h-8 animate-spin text-white/60 mb-3" /> : <AlertTriangle className="w-8 h-8 text-white mb-3 group-hover:scale-110 transition-transform" />}
             <span className="font-bold text-base text-white">Theft / Robbery</span>
           </button>
 
           <button 
             onClick={() => handleEmergency('harassment')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm"
+            className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm cursor-pointer"
           >
-            {loadingType === 'harassment' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🛡️</div>}
+            {loadingType === 'harassment' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <Shield className="w-8 h-8 text-text-main/80 mb-3 group-hover:scale-110 transition-transform" />}
             <span className="font-bold text-base text-text-main/90">Harassment</span>
           </button>
 
           <button 
             onClick={() => handleEmergency('lost_directions')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 sm:col-span-2 md:col-span-1 shadow-sm"
+            className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 sm:col-span-2 md:col-span-1 shadow-sm cursor-pointer"
           >
-            {loadingType === 'lost_directions' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🗺️</div>}
+            {loadingType === 'lost_directions' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <Map className="w-8 h-8 text-text-main/80 mb-3 group-hover:scale-110 transition-transform" />}
             <span className="font-bold text-base text-text-main/90">I'm Lost (Directions)</span>
           </button>
         </div>

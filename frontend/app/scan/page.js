@@ -73,7 +73,7 @@ export default function ScanPage() {
             )}
           </div>
 
-          <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-white shadow-md rounded-xl py-4 font-bold transition-all flex items-center justify-center gap-2">
+          <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-white shadow-md rounded-xl py-4 font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
             {loading ? "Analyzing..." : "Scan Image"}
           </button>

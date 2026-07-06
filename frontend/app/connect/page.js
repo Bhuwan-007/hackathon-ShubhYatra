@@ -220,14 +220,14 @@ export default function ConnectPage() {
               </div>
             </div>
             
-            <button type="submit" disabled={isAuthenticating} className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex justify-center items-center gap-2 shadow-md">
+            <button type="submit" disabled={isAuthenticating} className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex justify-center items-center gap-2 shadow-md cursor-pointer">
               {isAuthenticating && <Loader2 className="w-4 h-4 animate-spin" />}
               {isLoginMode ? 'Sign In' : 'Create Account'}
             </button>
           </form>
           
           <div className="mt-4">
-            <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+            <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer">
               {isLoginMode ? "Need an account? Register" : "Already have an account? Sign In"}
             </button>
           </div>
@@ -236,7 +236,7 @@ export default function ConnectPage() {
             <span className="text-xs font-bold text-text-main/40 uppercase">or</span>
           </div>
 
-          <button onClick={handleDemoLogin} disabled={isAuthenticating} className="w-full py-3 bg-white/50 hover:bg-white/80 text-text-main font-bold rounded-lg transition-colors border border-white/60 shadow-sm">
+          <button onClick={handleDemoLogin} disabled={isAuthenticating} className="w-full py-3 bg-white/50 hover:bg-white/80 text-text-main font-bold rounded-lg transition-colors border border-white/60 shadow-sm cursor-pointer">
             Continue as Demo User
           </button>
         </div>

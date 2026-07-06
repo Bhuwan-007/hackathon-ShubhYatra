@@ -92,7 +92,7 @@ export default function ReportPage() {
           <input type="file" accept="image/*" className="w-full text-sm text-text-main/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-white/60 file:text-text-main file:shadow-sm hover:file:bg-white/80 file:transition-all cursor-pointer" onChange={e => setFile(e.target.files?.[0])} />
         </div>
 
-        <button type="submit" disabled={loading} className="w-full bg-accent hover:bg-accent/90 text-white shadow-md rounded-xl py-4 font-bold transition-all flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="w-full bg-accent hover:bg-accent/90 text-white shadow-md rounded-xl py-4 font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <AlertTriangle className="w-5 h-5" />}
           Submit Report
         </button>
