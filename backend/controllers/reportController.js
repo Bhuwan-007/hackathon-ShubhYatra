@@ -96,9 +96,22 @@ const verifyReport = async (req, res) => {
   }
 };
 
+const getRecentReports = async (req, res) => {
+  try {
+    const recentReports = await UserReport.find({ status: 'verified' })
+      .sort({ reportedAt: -1, createdAt: -1 })
+      .limit(5);
+    res.json(recentReports);
+  } catch (error) {
+    console.error('❌ Error fetching recent reports:', error);
+    res.status(500).json({ error: 'Failed to fetch recent reports' });
+  }
+};
+
 module.exports = {
   submitReport,
   getHeatmap,
   getRawReports,
-  verifyReport
+  verifyReport,
+  getRecentReports
 };

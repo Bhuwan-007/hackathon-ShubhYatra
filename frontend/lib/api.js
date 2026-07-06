@@ -66,6 +66,14 @@ export async function fetchHeatmap() {
   } catch (error) { throw error; }
 }
 
+export async function fetchRecentReports() {
+  try {
+    const response = await fetch(`${API_URL}/reports/recent`);
+    if (!response.ok) throw new Error('Failed to fetch recent reports.');
+    return await response.json();
+  } catch (error) { throw error; }
+}
+
 export async function fetchRawReports(token) {
   try {
     const response = await fetch(`${API_URL}/reports`, {

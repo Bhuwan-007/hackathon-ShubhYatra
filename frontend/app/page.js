@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { fetchBriefing } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { fetchBriefing, fetchRecentReports } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { 
   ShieldAlert, ShieldCheck, MapPin, 
@@ -23,6 +23,22 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [briefing, setBriefing] = useState(null);
+  const [recentReports, setRecentReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+
+  useEffect(() => {
+    const loadRecent = async () => {
+      try {
+        const data = await fetchRecentReports();
+        setRecentReports(data);
+      } catch (err) {
+        console.error("Failed to fetch recent reports", err);
+      } finally {
+        setLoadingReports(false);
+      }
+    };
+    loadRecent();
+  }, []);
 
   const handleToggleType = (id) => {
     setSelectedTypes(prev => 
@@ -39,13 +55,23 @@ export default function Home() {
     setBriefing(null);
 
     try {
-      const data = await fetchBriefing(location, selectedTypes);
+      const searchLoc = arguments.length > 1 ? arguments[1] : location;
+      const data = await fetchBriefing(searchLoc, selectedTypes);
       setBriefing(data);
     } catch (err) {
       setError(err.message || "Failed to retrieve safety briefing. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickSearch = (quickLocation) => {
+    setLocation(quickLocation);
+    // Slight delay to allow state to update before submitting
+    setTimeout(() => {
+      const formEvent = { preventDefault: () => {} };
+      handleSearch(formEvent, quickLocation);
+    }, 0);
   };
 
   return (
@@ -90,6 +116,21 @@ export default function Home() {
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 </button>
+              </div>
+              
+              {/* Quick Destinations */}
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <span className="text-xs text-text-main/50 font-medium mr-1">Trending:</span>
+                {["Paharganj, Delhi", "Montmartre, Paris", "Khao San Road, Bangkok"].map((dest) => (
+                  <button
+                    key={dest}
+                    type="button"
+                    onClick={() => handleQuickSearch(dest)}
+                    className="text-xs bg-black/5 hover:bg-primary hover:text-white text-text-main/70 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                  >
+                    {dest}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -143,7 +184,49 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results */}
+        {/* Live Safety Pulse (Shown when no briefing is active) */}
+        {!briefing && !loading && (
+          <div className="mt-12 animate-in fade-in duration-500">
+            <h2 className="text-xl font-bold font-display text-text-main mb-6 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-accent" />
+              Live Safety Pulse
+            </h2>
+            
+            {loadingReports ? (
+              <div className="flex gap-4 overflow-x-auto pb-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="min-w-[280px] h-32 bg-white/40 rounded-2xl animate-pulse flex-shrink-0" />
+                ))}
+              </div>
+            ) : recentReports.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+                {recentReports.map(report => (
+                  <div key={report._id} className="min-w-[280px] w-[280px] bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm snap-start flex flex-col">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded-md">
+                        {report.category}
+                      </span>
+                      {report.severity >= 4 && (
+                        <AlertTriangle className="w-4 h-4 text-alert" />
+                      )}
+                    </div>
+                    <p className="text-sm text-text-main font-medium mb-3 line-clamp-2 flex-grow">
+                      "{report.description}"
+                    </p>
+                    <div className="flex items-center text-xs text-text-main/60 font-medium">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      <span className="truncate">{report.location}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-text-main/50">No recent reports available.</p>
+            )}
+          </div>
+        )}
+
+        {/* Briefing Results */}
         {briefing && !loading && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
