@@ -17,7 +17,7 @@ const getNearbyBuddies = async (req, res) => {
     });
 
     // Extract all user IDs the current user is already connected/pending with
-    const connectedUserIds = existingConnections.map(conn => 
+    const connectedUserIds = existingConnections.map(conn =>
       conn.requesterId.toString() === userId ? conn.recipientId : conn.requesterId
     );
 
@@ -60,7 +60,7 @@ const respondToRequest = async (req, res) => {
 
     const status = action === 'accept' ? 'accepted' : 'declined';
     const connection = await BuddyConnection.findByIdAndUpdate(connectionId, { status }, { new: true });
-    
+
     if (!connection) return res.status(404).json({ error: 'Connection not found' });
     res.json(connection);
   } catch (error) {
@@ -72,7 +72,7 @@ const respondToRequest = async (req, res) => {
 const shareLocation = async (req, res) => {
   try {
     const { connectionId, durationHours = 4 } = req.body;
-    
+
     const connection = await BuddyConnection.findById(connectionId);
     if (!connection) return res.status(404).json({ error: 'Connection not found' });
     if (connection.status !== 'accepted') return res.status(403).json({ error: 'Connection not accepted' });
@@ -94,7 +94,7 @@ const getMessages = async (req, res) => {
     const { connectionId } = req.params;
     const connection = await BuddyConnection.findById(connectionId).select('messages status');
     if (!connection) return res.status(404).json({ error: 'Connection not found' });
-    
+
     res.json(connection.messages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
@@ -139,5 +139,49 @@ const testCreateUser = async (req, res) => {
     res.status(500).json({ error: 'Failed to create test user' });
   }
 };
+// GET /api/buddies/connections
+const getConnections = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId is required' });
 
-module.exports = { getNearbyBuddies, sendRequest, respondToRequest, shareLocation, getMessages, sendMessage, testCreateUser };
+    const connections = await BuddyConnection.find({
+      $or: [{ requesterId: userId }, { recipientId: userId }]
+    }).populate('requesterId', 'displayName isVerified currentLocation travelerType')
+      .populate('recipientId', 'displayName isVerified currentLocation travelerType')
+      .sort({ updatedAt: -1 });
+
+    res.json(connections);
+  } catch (error) {
+    console.error('❌ Error fetching connections:', error);
+    res.status(500).json({ error: 'Failed to fetch connections' });
+  }
+};
+
+// PATCH /api/buddies/visibility
+const updateVisibility = async (req, res) => {
+  try {
+    const { userId, visibility } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+    const user = await UserProfile.findByIdAndUpdate(userId, { visibility }, { new: true });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ visibility: user.visibility });
+  } catch (error) {
+    console.error('❌ Error updating visibility:', error);
+    res.status(500).json({ error: 'Failed to update visibility' });
+  }
+};
+
+module.exports = {
+  getNearbyBuddies,
+  sendRequest,
+  respondToRequest,
+  shareLocation,
+  getMessages,
+  sendMessage,
+  testCreateUser,
+  getConnections,
+  updateVisibility
+};

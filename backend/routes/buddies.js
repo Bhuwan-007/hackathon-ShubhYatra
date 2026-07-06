@@ -3,17 +3,21 @@ const router = express.Router();
 const { 
   getNearbyBuddies, 
   sendRequest, 
-  respondToRequest, 
-  shareLocation, 
-  getMessages, 
+  respondToRequest,
+  shareLocation,
+  getMessages,
   sendMessage,
-  testCreateUser
+  testCreateUser,
+  getConnections,
+  updateVisibility
 } = require('../controllers/buddyController');
 
 // Test Helper (so you can generate users in Postman easily)
 router.post('/test-user', testCreateUser);
 
 router.get('/nearby', getNearbyBuddies);
+router.get('/connections', getConnections);
+router.patch('/visibility', updateVisibility);
 router.post('/request', sendRequest);
 router.post('/respond', respondToRequest);
 router.post('/share-location', shareLocation);
