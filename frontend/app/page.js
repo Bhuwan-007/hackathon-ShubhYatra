@@ -51,21 +51,6 @@ export default function Home() {
   return (
     <div className="min-h-screen text-stone-900 font-sans selection:bg-emerald-100 pb-20">
       
-      {/* Header */}
-      <header className="w-full bg-white border-b border-stone-200/60 sticky top-0 z-10 backdrop-blur-md bg-white/70">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-emerald-600" />
-            <span className="text-xl font-semibold tracking-tight text-stone-800">ShubhYatra</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-500">
-            <span className="text-emerald-700 cursor-pointer">Safety Briefings</span>
-            <span className="hover:text-stone-900 cursor-pointer transition-colors">Scam Scanner</span>
-            <span className="hover:text-stone-900 cursor-pointer transition-colors">Emergency</span>
-          </nav>
-        </div>
-      </header>
-
       <main className="max-w-4xl mx-auto px-6 py-12 md:py-20">
         
         {/* Hero Section */}

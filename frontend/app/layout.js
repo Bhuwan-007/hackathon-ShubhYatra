@@ -1,4 +1,5 @@
 import './globals.css';
+import Header from '@/components/Header';
 
 export const metadata = {
   title: 'ShubhYatra | AI Tourist Safety',
@@ -8,7 +9,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-stone-50 text-stone-900 min-h-screen">
+        <Header />
         {children}
       </body>
     </html>
