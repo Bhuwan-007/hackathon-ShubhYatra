@@ -38,11 +38,13 @@ const briefingRoutes = require('./routes/briefing');
 const scanRoutes = require('./routes/scan');
 const emergencyRoutes = require('./routes/emergency');
 const reportRoutes = require('./routes/reports');
+const buddyRoutes = require('./routes/buddies');
 
 app.use('/api/briefing', briefingRoutes);
 app.use('/api/scan-image', scanRoutes);
 app.use('/api/emergency-plan', emergencyRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/buddies', buddyRoutes);
 
 const PORT = process.env.PORT || 5000;
 

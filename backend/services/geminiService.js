@@ -26,9 +26,20 @@ async function generateSafetyBriefing(location, travelerType = []) {
     const reports = await UserReport.find({
       location: { $regex: location, $options: 'i' },
       status: 'verified'
-    }).sort({ reportedAt: -1 }).limit(5);
+    })
+    .populate('authorId', 'isVerified') // Populate to see if author is verified
+    .sort({ reportedAt: -1 })
+    .limit(10); // Fetch a few more to filter/weight
 
-    backgroundData.recentReports = reports;
+    // Sort/weight so that reports from verified authors bubble to the top of the context
+    // This honors the "Safety Buddy" opt-in verification signal during AI briefing generation
+    reports.sort((a, b) => {
+      const aVerified = a.authorId && a.authorId.isVerified ? 1 : 0;
+      const bVerified = b.authorId && b.authorId.isVerified ? 1 : 0;
+      return bVerified - aVerified;
+    });
+
+    backgroundData.recentReports = reports.slice(0, 5); // Keep the top 5 for the prompt
 
     const genAI = getGenAI();
     // If Gemini key is missing, fallback immediately
