@@ -1,9 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #E8735F;
+  --color-secondary: #F4C7C3;
+  --color-accent: #E0A458;
+  --color-background-light: #FFF8F3;
+  --color-background-dark: #2B1820;
+  --color-text-main: #3D1F2B;
+  --color-alert: #D64545;
+  --font-display: "Fraunces", serif;
+}
+
 @layer base {
   body {
-    background-color: var(--color-stone-50);
-    color: var(--color-stone-900);
+    background-color: var(--color-background-light);
+    color: var(--color-text-main);
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 }

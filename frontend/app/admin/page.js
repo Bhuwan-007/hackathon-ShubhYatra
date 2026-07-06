@@ -40,45 +40,45 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-[80vh] items-center justify-center text-stone-500">
+      <div className="flex h-[80vh] items-center justify-center text-text-main/50">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-100 font-sans p-6 md:p-12">
+    <div className="min-h-screen font-sans p-6 md:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        <header className="border-b border-stone-800 pb-6 mb-8 flex items-center justify-between">
+        <header className="border-b border-white/40 pb-6 mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-              <ShieldCheck className="w-8 h-8 text-emerald-500" />
+            <h1 className="text-3xl font-bold tracking-tight font-display text-text-main flex items-center gap-2">
+              <ShieldCheck className="w-8 h-8 text-accent" />
               ShubhYatra Authority Dashboard
             </h1>
-            <p className="text-stone-400 mt-1">Decision intelligence and hazard monitoring center.</p>
+            <p className="text-text-main/70 mt-1">Decision intelligence and hazard monitoring center.</p>
           </div>
         </header>
 
         {/* Heatmap Chart Section */}
-        <div className="bg-stone-800 rounded-2xl border border-stone-700 p-6 shadow-xl">
-          <h2 className="text-lg font-semibold text-white mb-6">Location Hazard Heatmap</h2>
+        <div className="bg-white/40 backdrop-blur-xl rounded-2xl border border-white/60 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <h2 className="text-lg font-bold font-display text-text-main mb-6">Location Hazard Heatmap</h2>
           {heatmapData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-stone-500">No report data available yet.</div>
+            <div className="h-64 flex items-center justify-center font-bold text-text-main/60">No report data available yet.</div>
           ) : (
             <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={heatmapData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
                   <XAxis dataKey="location" stroke="#888" tick={{ fill: '#888' }} />
                   <YAxis yAxisId="left" orientation="left" stroke="#888" tick={{ fill: '#888' }} />
-                  <YAxis yAxisId="right" orientation="right" stroke="#eab308" tick={{ fill: '#eab308' }} />
+                  <YAxis yAxisId="right" orientation="right" stroke="#E0A458" tick={{ fill: '#E0A458' }} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#1c1917', borderColor: '#444', color: '#fff' }} 
-                    itemStyle={{ color: '#fff' }}
+                    contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e5e5', color: '#3D1F2B', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                    itemStyle={{ color: '#3D1F2B', fontWeight: 'bold' }}
                   />
-                  <Bar yAxisId="left" dataKey="count" name="Report Count" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  <Bar yAxisId="right" dataKey="avgSeverity" name="Avg Severity (1-5)" fill="#eab308" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="count" name="Report Count" fill="#E8735F" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="right" dataKey="avgSeverity" name="Avg Severity (1-5)" fill="#E0A458" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -86,43 +86,43 @@ export default function AdminDashboard() {
         </div>
 
         {/* Raw Reports List */}
-        <div className="bg-stone-800 rounded-2xl border border-stone-700 overflow-hidden shadow-xl">
-          <div className="p-6 border-b border-stone-700 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Pending Field Reports</h2>
-            <span className="text-sm px-3 py-1 bg-stone-700 rounded-full font-medium">{reports.filter(r => r.status === 'pending').length} Pending</span>
+        <div className="bg-white/40 backdrop-blur-xl rounded-2xl border border-white/60 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="p-6 border-b border-white/40 flex items-center justify-between bg-white/30">
+            <h2 className="text-lg font-bold font-display text-text-main">Pending Field Reports</h2>
+            <span className="text-sm px-3 py-1 bg-white/60 text-text-main shadow-sm rounded-full font-bold">{reports.filter(r => r.status === 'pending').length} Pending</span>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-stone-900/50 text-stone-400">
+              <thead className="bg-white/50 text-text-main/70">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">Date</th>
-                  <th className="px-6 py-4 font-semibold">Location</th>
-                  <th className="px-6 py-4 font-semibold">Category</th>
-                  <th className="px-6 py-4 font-semibold">Severity</th>
-                  <th className="px-6 py-4 font-semibold w-full max-w-xs">Description</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
-                  <th className="px-6 py-4 font-semibold text-right">Action</th>
+                  <th className="px-6 py-4 font-bold">Date</th>
+                  <th className="px-6 py-4 font-bold">Location</th>
+                  <th className="px-6 py-4 font-bold">Category</th>
+                  <th className="px-6 py-4 font-bold">Severity</th>
+                  <th className="px-6 py-4 font-bold w-full max-w-xs">Description</th>
+                  <th className="px-6 py-4 font-bold">Status</th>
+                  <th className="px-6 py-4 font-bold text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-700">
+              <tbody className="divide-y divide-white/40">
                 {reports.map(report => (
-                  <tr key={report._id} className="hover:bg-stone-700/30 transition-colors">
-                    <td className="px-6 py-4 text-stone-400">{new Date(report.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 font-medium text-stone-200">{report.location}</td>
-                    <td className="px-6 py-4 capitalize text-stone-300">{report.category}</td>
+                  <tr key={report._id} className="hover:bg-white/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-text-main/70">{new Date(report.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 font-bold text-text-main">{report.location}</td>
+                    <td className="px-6 py-4 capitalize font-medium text-text-main/80">{report.category}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-1">
                         {[...Array(5)].map((_, i) => (
-                          <div key={i} className={cn("w-2 h-4 rounded-sm", i < report.severity ? (report.severity >= 4 ? "bg-red-500" : "bg-amber-500") : "bg-stone-700")} />
+                          <div key={i} className={cn("w-2 h-4 rounded-sm shadow-inner", i < report.severity ? (report.severity >= 4 ? "bg-alert" : "bg-accent") : "bg-white/60")} />
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-stone-400 truncate max-w-xs">{report.description}</td>
+                    <td className="px-6 py-4 text-text-main/70 truncate max-w-xs font-medium">{report.description}</td>
                     <td className="px-6 py-4">
                       <span className={cn(
-                        "px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide",
-                        report.status === 'verified' ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        "px-2.5 py-1 rounded-full text-xs font-bold tracking-wide shadow-sm",
+                        report.status === 'verified' ? "bg-primary/10 text-primary border border-primary/20" : "bg-accent/20 text-accent border border-accent/30"
                       )}>
                         {report.status.toUpperCase()}
                       </span>
@@ -131,19 +131,19 @@ export default function AdminDashboard() {
                       {report.status === 'pending' ? (
                         <button 
                           onClick={() => handleVerify(report._id)}
-                          className="text-xs font-semibold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
+                          className="text-xs font-bold px-3 py-1.5 bg-primary hover:bg-primary/90 shadow-sm text-white rounded-lg transition-colors"
                         >
                           Verify
                         </button>
                       ) : (
-                        <span className="text-xs text-stone-500 font-medium px-3 py-1.5">Verified</span>
+                        <span className="text-xs text-text-main/50 font-bold px-3 py-1.5">Verified</span>
                       )}
                     </td>
                   </tr>
                 ))}
                 {reports.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="px-6 py-8 text-center text-stone-500">
+                    <td colSpan="7" className="px-6 py-8 text-center font-bold text-text-main/50">
                       No reports found in the database.
                     </td>
                   </tr>
