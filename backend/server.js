@@ -6,10 +6,7 @@ const mongoose = require('mongoose');
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors()); // Allow all origins for the hackathon demo
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
