@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { requireAuth } = require('../middleware/authMiddleware');
+
 const { 
   getNearbyBuddies, 
   sendRequest, 
@@ -12,8 +14,8 @@ const {
   updateVisibility
 } = require('../controllers/buddyController');
 
-// Test Helper (so you can generate users in Postman easily)
-router.post('/test-user', testCreateUser);
+// All buddy routes require authentication
+router.use(requireAuth);
 
 router.get('/nearby', getNearbyBuddies);
 router.get('/connections', getConnections);

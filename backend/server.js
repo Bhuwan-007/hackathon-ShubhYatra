@@ -6,7 +6,10 @@ const mongoose = require('mongoose');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,7 +42,9 @@ const scanRoutes = require('./routes/scan');
 const emergencyRoutes = require('./routes/emergency');
 const reportRoutes = require('./routes/reports');
 const buddyRoutes = require('./routes/buddies');
+const authRoutes = require('./routes/auth');
 
+app.use('/api/auth', authRoutes);
 app.use('/api/briefing', briefingRoutes);
 app.use('/api/scan-image', scanRoutes);
 app.use('/api/emergency-plan', emergencyRoutes);

@@ -1,7 +1,18 @@
 const mongoose = require('mongoose');
 
 const userProfileSchema = new mongoose.Schema({
-  sessionId: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  passwordHash: {
+    type: String,
+    required: true
+  },
+  sessionId: {
+    type: String, // Deprecated, but keeping for backwards compatibility if needed
+  },
   travelerType: [{ 
     type: String,
     enum: ['solo', 'elderly', 'disabled', 'non-native-speaker', 'family']

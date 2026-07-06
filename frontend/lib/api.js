@@ -84,86 +84,129 @@ export async function verifyReport(id) {
 
 // --- Safety Buddy Endpoints ---
 
-export async function fetchNearbyBuddies(location, userId) {
+const handleAuthResponse = async (response) => {
+  if (response.status === 401) {
+    throw new Error('AUTH_EXPIRED');
+  }
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || 'Request failed');
+  }
+  return await response.json();
+};
+
+export async function fetchNearbyBuddies(location, token) {
   try {
-    const response = await fetch(`${API_URL}/buddies/nearby?location=${encodeURIComponent(location)}&userId=${encodeURIComponent(userId)}`);
-    if (!response.ok) throw new Error('Failed to fetch nearby buddies.');
-    return await response.json();
+    const response = await fetch(`${API_URL}/buddies/nearby?location=${encodeURIComponent(location)}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function fetchMyConnections(userId) {
+export async function fetchMyConnections(token) {
   try {
-    const response = await fetch(`${API_URL}/buddies/connections?userId=${encodeURIComponent(userId)}`);
-    if (!response.ok) throw new Error('Failed to fetch connections.');
-    return await response.json();
+    const response = await fetch(`${API_URL}/buddies/connections`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function updateUserVisibility(userId, visibility) {
+export async function updateUserVisibility(visibility, token) {
   try {
     const response = await fetch(`${API_URL}/buddies/visibility`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, visibility }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ visibility }),
     });
-    if (!response.ok) throw new Error('Failed to update visibility.');
-    return await response.json();
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function sendBuddyRequest(requesterId, recipientId) {
+export async function sendBuddyRequest(recipientId, token) {
   try {
     const response = await fetch(`${API_URL}/buddies/request`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requesterId, recipientId }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ recipientId }),
     });
-    if (!response.ok) throw new Error('Failed to send buddy request.');
-    return await response.json();
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function respondToBuddyRequest(connectionId, action) {
+export async function respondToBuddyRequest(connectionId, action, token) {
   try {
     const response = await fetch(`${API_URL}/buddies/respond`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ connectionId, action }),
     });
-    if (!response.ok) throw new Error('Failed to respond to request.');
-    return await response.json();
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function shareBuddyLocation(connectionId, durationHours = 4) {
+export async function shareBuddyLocation(connectionId, durationHours = 4, token) {
   try {
     const response = await fetch(`${API_URL}/buddies/share-location`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ connectionId, durationHours }),
     });
-    if (!response.ok) throw new Error('Failed to share location.');
-    return await response.json();
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function fetchBuddyMessages(connectionId) {
+export async function fetchBuddyMessages(connectionId, token) {
   try {
-    const response = await fetch(`${API_URL}/buddies/${connectionId}/messages`);
-    if (!response.ok) throw new Error('Failed to fetch messages.');
-    return await response.json();
+    const response = await fetch(`${API_URL}/buddies/${connectionId}/messages`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function sendBuddyMessage(connectionId, senderId, text) {
+export async function sendBuddyMessage(connectionId, text, token) {
   try {
     const response = await fetch(`${API_URL}/buddies/${connectionId}/messages`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ senderId, text }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ text }), // backend derives senderId from token
     });
-    if (!response.ok) throw new Error('Failed to send message.');
-    return await response.json();
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
+}
+
+// --- Auth Endpoints ---
+
+export async function loginUser(email, password) {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Login failed');
+  }
+  return await response.json();
+}
+
+export async function registerUser(email, password, displayName) {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, displayName })
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Registration failed');
+  }
+  return await response.json();
+}
+
+export async function demoLoginUser() {
+  const response = await fetch(`${API_URL}/auth/demo`, { method: 'POST' });
+  if (!response.ok) throw new Error('Demo login failed');
+  return await response.json();
 }

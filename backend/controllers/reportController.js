@@ -31,7 +31,8 @@ const submitReport = async (req, res) => {
       category,
       severity: severityNum,
       imageUrl,
-      status: 'pending'
+      status: 'pending',
+      authorId: req.user ? req.user.id : null // Wire up the verified weighting!
     });
 
     await newReport.save();

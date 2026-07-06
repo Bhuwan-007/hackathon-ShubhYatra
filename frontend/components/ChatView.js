@@ -4,7 +4,7 @@ import { fetchBuddyMessages, sendBuddyMessage, shareBuddyLocation } from "@/lib/
 import { MapPin, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function ChatView({ connection, currentUserId, onBack }) {
+export default function ChatView({ connection, currentUserId, token, onBack, onAuthError }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
@@ -21,11 +21,11 @@ export default function ChatView({ connection, currentUserId, onBack }) {
     
     const loadMessages = async () => {
       try {
-        const msgs = await fetchBuddyMessages(connection._id);
+        const msgs = await fetchBuddyMessages(connection._id, token);
         setMessages(msgs);
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
       } catch (err) {
-        console.error("Poll failed", err);
+        if (onAuthError) onAuthError(err);
       }
     };
 
@@ -69,12 +69,12 @@ export default function ChatView({ connection, currentUserId, onBack }) {
     
     setSending(true);
     try {
-      const newMsg = await sendBuddyMessage(connection._id, currentUserId, inputText);
+      const newMsg = await sendBuddyMessage(connection._id, inputText, token);
       setMessages(prev => [...prev, newMsg]);
       setInputText("");
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
-      console.error("Failed to send", err);
+      if (onAuthError) onAuthError(err);
     } finally {
       setSending(false);
     }
@@ -83,13 +83,13 @@ export default function ChatView({ connection, currentUserId, onBack }) {
   const handleShareLocation = async () => {
     setSharing(true);
     try {
-      await shareBuddyLocation(connection._id, 4); // 4 hours
+      await shareBuddyLocation(connection._id, 4, token); // 4 hours
       // To immediately reflect the change, we ideally refetch the connection,
       // but for this demo, polling will pick up the updated connection eventually, 
       // or we can just artificially set the timer text for instant feedback:
       setShareTimeLeft("4h 0m left");
     } catch (err) {
-      console.error(err);
+      if (onAuthError) onAuthError(err);
     } finally {
       setSharing(false);
     }

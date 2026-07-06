@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { submitReport, getHeatmap, getRawReports, verifyReport } = require('../controllers/reportController');
+const { optionalAuth } = require('../middleware/authMiddleware');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 // POST /api/reports
-router.post('/', upload.single('image'), submitReport);
+router.post('/', optionalAuth, upload.single('image'), submitReport);
 
 // GET /api/reports/heatmap
 router.get('/heatmap', getHeatmap);

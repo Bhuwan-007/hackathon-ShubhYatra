@@ -4,10 +4,11 @@ const BuddyConnection = require('../models/BuddyConnection');
 // GET /api/buddies/nearby
 const getNearbyBuddies = async (req, res) => {
   try {
-    const { location, userId } = req.query; // In a real app, userId comes from JWT auth middleware
+    const { location } = req.query;
+    const userId = req.user.id;
 
-    if (!userId || !location) {
-      return res.status(400).json({ error: 'userId and location are required' });
+    if (!location) {
+      return res.status(400).json({ error: 'location is required' });
     }
 
     // Find connections where user is involved (either as requester or recipient)
@@ -29,7 +30,7 @@ const getNearbyBuddies = async (req, res) => {
       _id: { $nin: excludedIds },
       visibility: true,
       currentLocation: { $regex: location, $options: 'i' }
-    }).select('displayName travelerType isVerified'); // STRIPPED: Do not return exact contact info or session keys
+    }).select('displayName travelerType isVerified'); // STRIPPED: Do not return exact contact info
 
     res.json(nearbyBuddies);
   } catch (error) {
@@ -41,8 +42,9 @@ const getNearbyBuddies = async (req, res) => {
 // POST /api/buddies/request
 const sendRequest = async (req, res) => {
   try {
-    const { requesterId, recipientId } = req.body;
-    if (!requesterId || !recipientId) return res.status(400).json({ error: 'requesterId and recipientId required' });
+    const requesterId = req.user.id;
+    const { recipientId } = req.body;
+    if (!recipientId) return res.status(400).json({ error: 'recipientId required' });
 
     const newConnection = new BuddyConnection({ requesterId, recipientId, status: 'pending' });
     await newConnection.save();
@@ -105,7 +107,8 @@ const getMessages = async (req, res) => {
 const sendMessage = async (req, res) => {
   try {
     const { connectionId } = req.params;
-    const { senderId, text } = req.body;
+    const senderId = req.user.id;
+    const { text } = req.body;
 
     const connection = await BuddyConnection.findById(connectionId);
     if (!connection) return res.status(404).json({ error: 'Connection not found' });
@@ -142,8 +145,7 @@ const testCreateUser = async (req, res) => {
 // GET /api/buddies/connections
 const getConnections = async (req, res) => {
   try {
-    const { userId } = req.query;
-    if (!userId) return res.status(400).json({ error: 'userId is required' });
+    const userId = req.user.id;
 
     const connections = await BuddyConnection.find({
       $or: [{ requesterId: userId }, { recipientId: userId }]
@@ -161,8 +163,12 @@ const getConnections = async (req, res) => {
 // PATCH /api/buddies/visibility
 const updateVisibility = async (req, res) => {
   try {
-    const { userId, visibility } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId is required' });
+    const userId = req.user.id;
+    const { visibility } = req.body;
+    
+    if (typeof visibility !== 'boolean') {
+      return res.status(400).json({ error: 'visibility boolean is required' });
+    }
 
     const user = await UserProfile.findByIdAndUpdate(userId, { visibility }, { new: true });
     if (!user) return res.status(404).json({ error: 'User not found' });
