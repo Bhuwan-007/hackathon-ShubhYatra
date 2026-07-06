@@ -46,16 +46,16 @@ export default function Home() {
     );
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!location.trim()) return;
+  const handleSearch = async (e, overrideLocation = null) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const searchLoc = overrideLocation || location;
+    if (!searchLoc.trim()) return;
 
     setLoading(true);
     setError(null);
     setBriefing(null);
 
     try {
-      const searchLoc = arguments.length > 1 ? arguments[1] : location;
       const data = await fetchBriefing(searchLoc, selectedTypes);
       setBriefing(data);
     } catch (err) {
