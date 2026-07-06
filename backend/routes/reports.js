@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { submitReport, getHeatmap, getRawReports, verifyReport } = require('../controllers/reportController');
-const { optionalAuth } = require('../middleware/authMiddleware');
+const { optionalAuth, requireAuth } = require('../middleware/authMiddleware');
+const { requireAdmin } = require('../middleware/requireAdmin');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -13,9 +14,9 @@ router.post('/', optionalAuth, upload.single('image'), submitReport);
 router.get('/heatmap', getHeatmap);
 
 // GET /api/reports (Admin: list all raw reports)
-router.get('/', getRawReports);
+router.get('/', requireAuth, requireAdmin, getRawReports);
 
 // PATCH /api/reports/:id/verify (Admin: verify a report)
-router.patch('/:id/verify', verifyReport);
+router.patch('/:id/verify', requireAuth, requireAdmin, verifyReport);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShieldCheck, ShieldAlert, Users, User } from 'lucide-react';
+import { Home, ShieldCheck, ShieldAlert, Users, User, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
@@ -15,6 +15,10 @@ export default function BottomNav() {
     { href: '/emergency', icon: ShieldAlert, label: 'Emergency' },
     { href: '/connect', icon: Users, label: 'Connect' },
   ];
+
+  if (user?.isAdmin) {
+    links.push({ href: '/admin', icon: LayoutDashboard, label: 'Admin' });
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/60 backdrop-blur-xl border-t border-white/40 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">

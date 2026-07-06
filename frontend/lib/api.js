@@ -66,19 +66,22 @@ export async function fetchHeatmap() {
   } catch (error) { throw error; }
 }
 
-export async function fetchRawReports() {
+export async function fetchRawReports(token) {
   try {
-    const response = await fetch(`${API_URL}/reports`);
-    if (!response.ok) throw new Error('Failed to fetch reports.');
-    return await response.json();
+    const response = await fetch(`${API_URL}/reports`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 
-export async function verifyReport(id) {
+export async function verifyReport(id, token) {
   try {
-    const response = await fetch(`${API_URL}/reports/${id}/verify`, { method: 'PATCH' });
-    if (!response.ok) throw new Error('Failed to verify report.');
-    return await response.json();
+    const response = await fetch(`${API_URL}/reports/${id}/verify`, { 
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await handleAuthResponse(response);
   } catch (error) { throw error; }
 }
 

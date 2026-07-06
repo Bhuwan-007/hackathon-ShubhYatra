@@ -19,6 +19,7 @@ const userProfileSchema = new mongoose.Schema({
   }],
   preferredLanguage: { type: String, default: 'English' },
   displayName: { type: String },
+  isAdmin: { type: Boolean, default: false },
   currentLocation: { type: String },
   travelDates: {
     start: Date,

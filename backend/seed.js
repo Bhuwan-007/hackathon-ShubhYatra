@@ -1,6 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const DestinationRisk = require('./models/DestinationRisk');
+const UserProfile = require('./models/UserProfile');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/shubhyatra';
 
@@ -42,6 +44,24 @@ async function seedDB() {
 
     console.log('🌱 Inserting seed data...');
     await DestinationRisk.insertMany(seedData);
+
+    console.log('👑 Seeding admin account...');
+    const adminEmail = 'admin@shubhyatra.com';
+    let admin = await UserProfile.findOne({ email: adminEmail });
+    if (!admin) {
+      const passwordHash = await bcrypt.hash('adminpassword123', 10);
+      admin = new UserProfile({
+        email: adminEmail,
+        passwordHash,
+        displayName: 'Admin User',
+        isAdmin: true,
+        isVerified: true
+      });
+      await admin.save();
+    } else {
+      admin.isAdmin = true;
+      await admin.save();
+    }
 
     console.log('✅ Seeding complete!');
   } catch (error) {

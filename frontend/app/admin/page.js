@@ -2,23 +2,32 @@
 import { useEffect, useState } from "react";
 import { fetchHeatmap, fetchRawReports, verifyReport } from "@/lib/api";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import { ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
+import { Shield, Route, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
+  const { user, token, isReady } = useAuth();
+  const router = useRouter();
+
   const [heatmapData, setHeatmapData] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isReady && (!user || !user.isAdmin)) {
+      router.push("/");
+    } else if (isReady && user?.isAdmin) {
+      loadData();
+    }
+  }, [isReady, user, router]);
 
   const loadData = async () => {
     try {
       const [heatMap, rawReports] = await Promise.all([
         fetchHeatmap(),
-        fetchRawReports()
+        fetchRawReports(token)
       ]);
       setHeatmapData(heatMap);
       setReports(rawReports);
@@ -31,12 +40,16 @@ export default function AdminDashboard() {
 
   const handleVerify = async (id) => {
     try {
-      await verifyReport(id);
+      await verifyReport(id, token);
       loadData(); // Refresh list to show updated status
     } catch (error) {
       console.error("Verification failed", error);
     }
   };
+
+  if (!isReady || (isReady && (!user || !user.isAdmin))) {
+    return null; // Don't render anything while checking or redirecting
+  }
 
   if (loading) {
     return (
@@ -53,7 +66,10 @@ export default function AdminDashboard() {
         <header className="border-b border-white/40 pb-6 mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight font-display text-text-main flex items-center gap-2">
-              <ShieldCheck className="w-8 h-8 text-accent" />
+              <div className="relative flex items-center justify-center w-8 h-8">
+                <Shield className="w-8 h-8 text-accent absolute" fill="currentColor" />
+                <Route className="w-4 h-4 text-white absolute" strokeWidth={3} />
+              </div>
               ShubhYatra Authority Dashboard
             </h1>
             <p className="text-text-main/70 mt-1">Decision intelligence and hazard monitoring center.</p>

@@ -23,7 +23,7 @@ const register = async (req, res) => {
     await user.save();
     
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: EXPIRES_IN });
-    res.status(201).json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation } });
+    res.status(201).json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation, isAdmin: user.isAdmin } });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ error: 'Email already registered' });
@@ -51,7 +51,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: EXPIRES_IN });
-    res.json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation } });
+    res.json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation, isAdmin: user.isAdmin } });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
@@ -77,7 +77,7 @@ const demo = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: EXPIRES_IN });
-    res.json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation } });
+    res.json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation, isAdmin: user.isAdmin } });
   } catch (error) {
     console.error('Demo login error:', error);
     res.status(500).json({ error: 'Demo login failed' });
