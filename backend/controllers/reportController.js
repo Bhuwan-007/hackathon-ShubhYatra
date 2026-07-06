@@ -73,7 +73,31 @@ const getHeatmap = async (req, res) => {
   }
 };
 
+const getRawReports = async (req, res) => {
+  try {
+    const reports = await UserReport.find().sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (error) {
+    console.error('❌ Error fetching reports:', error);
+    res.status(500).json({ error: 'Failed to fetch reports' });
+  }
+};
+
+const verifyReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const report = await UserReport.findByIdAndUpdate(id, { status: 'verified' }, { new: true });
+    if (!report) return res.status(404).json({ error: 'Report not found' });
+    res.json(report);
+  } catch (error) {
+    console.error('❌ Error verifying report:', error);
+    res.status(500).json({ error: 'Failed to verify report' });
+  }
+};
+
 module.exports = {
   submitReport,
-  getHeatmap
+  getHeatmap,
+  getRawReports,
+  verifyReport
 };

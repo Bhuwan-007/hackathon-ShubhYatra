@@ -57,3 +57,27 @@ export async function scanScamImage(formData) {
     return await response.json();
   } catch (error) { throw error; }
 }
+
+export async function fetchHeatmap() {
+  try {
+    const response = await fetch(`${API_URL}/reports/heatmap`);
+    if (!response.ok) throw new Error('Failed to fetch heatmap.');
+    return await response.json();
+  } catch (error) { throw error; }
+}
+
+export async function fetchRawReports() {
+  try {
+    const response = await fetch(`${API_URL}/reports`);
+    if (!response.ok) throw new Error('Failed to fetch reports.');
+    return await response.json();
+  } catch (error) { throw error; }
+}
+
+export async function verifyReport(id) {
+  try {
+    const response = await fetch(`${API_URL}/reports/${id}/verify`, { method: 'PATCH' });
+    if (!response.ok) throw new Error('Failed to verify report.');
+    return await response.json();
+  } catch (error) { throw error; }
+}
