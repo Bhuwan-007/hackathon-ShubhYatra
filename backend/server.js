@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -9,10 +10,32 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// MongoDB Connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/shubhyatra';
+
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('✅ Successfully connected to MongoDB.');
+  })
+  .catch((err) => {
+    console.error('❌ Error connecting to MongoDB:');
+    console.error(err.message);
+    console.error('💡 Please ensure MongoDB is running and MONGODB_URI is correct in .env');
+  });
+
 // Health Check Route
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const dbState = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({ 
+    status: 'ok', 
+    database: dbState,
+    timestamp: new Date().toISOString() 
+  });
 });
+
+// Import Routes
+const briefingRoutes = require('./routes/briefing');
+app.use('/api/briefing', briefingRoutes);
 
 const PORT = process.env.PORT || 5000;
 
