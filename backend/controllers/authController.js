@@ -23,7 +23,7 @@ const register = async (req, res) => {
     await user.save();
     
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: EXPIRES_IN });
-    res.status(201).json({ token, user: { id: user._id, displayName: user.displayName, email: user.email } });
+    res.status(201).json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation } });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ error: 'Email already registered' });
@@ -51,7 +51,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: EXPIRES_IN });
-    res.json({ token, user: { id: user._id, displayName: user.displayName, email: user.email } });
+    res.json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation } });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
@@ -69,14 +69,15 @@ const demo = async (req, res) => {
         email,
         passwordHash,
         displayName: 'Demo User',
-        currentLocation: 'Delhi',
-        isVerified: true
+        currentLocation: 'Paharganj, Delhi',
+        isVerified: true,
+        visibility: true
       });
       await user.save();
     }
 
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: EXPIRES_IN });
-    res.json({ token, user: { id: user._id, displayName: user.displayName, email: user.email } });
+    res.json({ token, user: { id: user._id, displayName: user.displayName, currentLocation: user.currentLocation } });
   } catch (error) {
     console.error('Demo login error:', error);
     res.status(500).json({ error: 'Demo login failed' });

@@ -124,6 +124,17 @@ export async function updateUserVisibility(visibility, token) {
   } catch (error) { throw error; }
 }
 
+export async function updateUserLocation(currentLocation, token) {
+  try {
+    const response = await fetch(`${API_URL}/profile/location`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ currentLocation }),
+    });
+    return await handleAuthResponse(response);
+  } catch (error) { throw error; }
+}
+
 export async function sendBuddyRequest(recipientId, token) {
   try {
     const response = await fetch(`${API_URL}/buddies/request`, {

@@ -2,18 +2,15 @@
 import { useState, useEffect } from "react";
 import { 
   fetchNearbyBuddies, fetchMyConnections, updateUserVisibility, 
-  sendBuddyRequest, respondToBuddyRequest, loginUser, registerUser, demoLoginUser 
+  sendBuddyRequest, respondToBuddyRequest, loginUser, registerUser, demoLoginUser, updateUserLocation 
 } from "@/lib/api";
-import { ShieldCheck, MapPin, Loader2, UserCheck, Users, MessageCircle, LogOut, Key } from "lucide-react";
+import { ShieldCheck, MapPin, Loader2, UserCheck, Users, MessageCircle, LogOut, Key, Map, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatView from "@/components/ChatView";
-
-const MOCK_LOCATION = "Delhi";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ConnectPage() {
-  const [token, setToken] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isReady, setIsReady] = useState(false);
+  const { token, user, isReady, login, logout, updateUserLocationState } = useAuth();
   
   // Tab state
   const [activeTab, setActiveTab] = useState("discover"); 
@@ -30,42 +27,19 @@ export default function ConnectPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [authError, setAuthError] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // Initialize Session
-  useEffect(() => {
-    const initSession = () => {
-      const storedToken = localStorage.getItem("yatri_jwt");
-      if (storedToken) {
-        setToken(storedToken);
-        // Decode JWT manually (naive split for demo purposes)
-        try {
-          const payload = JSON.parse(atob(storedToken.split('.')[1]));
-          setUserId(payload.id);
-        } catch (e) {
-          localStorage.removeItem("yatri_jwt");
-          setToken(null);
-        }
-      }
-      setIsReady(true);
-    };
-    initSession();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("yatri_jwt");
-    setToken(null);
-    setUserId(null);
-    setNearby([]);
-    setConnections([]);
-    setActiveChat(null);
-  };
+  // Location Permission State
+  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
+  const [manualLocation, setManualLocation] = useState("");
+  const [locationError, setLocationError] = useState("");
 
   const handleAuthError = (err) => {
     if (err.message === 'AUTH_EXPIRED') {
-      handleLogout();
+      logout();
     } else {
       console.error(err);
     }
@@ -73,21 +47,17 @@ export default function ConnectPage() {
 
   // Fetch Data
   useEffect(() => {
-    if (!isReady || !token || !userId) return;
+    if (!isReady || !token || !user || !user.currentLocation) return;
 
     const loadData = async () => {
       setLoading(true);
       try {
         const [nearbyData, connData] = await Promise.all([
-          fetchNearbyBuddies(MOCK_LOCATION, token),
+          fetchNearbyBuddies(user.currentLocation, token),
           fetchMyConnections(token)
         ]);
         setNearby(nearbyData);
         setConnections(connData);
-        
-        // Infer visibility state from myself (if I'm in my own nearby list... actually I'm excluded)
-        // For a full app, we'd fetch the user's profile to get their current visibility.
-        // We assume false initially unless toggled.
       } catch (err) {
         handleAuthError(err);
       } finally {
@@ -96,7 +66,7 @@ export default function ConnectPage() {
     };
 
     loadData();
-  }, [isReady, token, userId, visibility]);
+  }, [isReady, token, user, visibility]);
 
   const handleToggleVisibility = async () => {
     const newVal = !visibility;
@@ -136,9 +106,7 @@ export default function ConnectPage() {
         if (!displayName) throw new Error("Display Name required");
         data = await registerUser(email, password, displayName);
       }
-      localStorage.setItem("yatri_jwt", data.token);
-      setToken(data.token);
-      setUserId(data.user.id);
+      login(data.token, data.user);
     } catch (err) {
       setAuthError(err.message);
     } finally {
@@ -151,13 +119,59 @@ export default function ConnectPage() {
     setIsAuthenticating(true);
     try {
       const data = await demoLoginUser();
-      localStorage.setItem("yatri_jwt", data.token);
-      setToken(data.token);
-      setUserId(data.user.id);
+      login(data.token, data.user);
     } catch (err) {
       setAuthError(err.message);
     } finally {
       setIsAuthenticating(false);
+    }
+  };
+
+  const requestLocation = () => {
+    setIsRequestingLocation(true);
+    setLocationError("");
+    
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser.");
+      setIsRequestingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`, {
+            headers: { 'User-Agent': 'ShubhYatraApp/1.0' }
+          });
+          const data = await res.json();
+          const city = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.state || 'Unknown Location';
+          
+          await updateUserLocation(city, token);
+          updateUserLocationState(city);
+        } catch (err) {
+          setLocationError("Failed to auto-detect location. Please enter it manually.");
+        } finally {
+          setIsRequestingLocation(false);
+        }
+      },
+      (error) => {
+        setLocationError("Location permission denied. Please enter it manually.");
+        setIsRequestingLocation(false);
+      }
+    );
+  };
+
+  const handleManualLocationSubmit = async (e) => {
+    e.preventDefault();
+    if (!manualLocation.trim()) return;
+    setIsRequestingLocation(true);
+    try {
+      await updateUserLocation(manualLocation.trim(), token);
+      updateUserLocationState(manualLocation.trim());
+    } catch (err) {
+      setLocationError("Failed to save location.");
+    } finally {
+      setIsRequestingLocation(false);
     }
   };
 
@@ -188,7 +202,22 @@ export default function ConnectPage() {
             </div>
             <div>
               <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-2 bg-stone-50 border border-stone-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" required />
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)} 
+                  className="w-full px-4 py-2 pr-10 bg-stone-50 border border-stone-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                  required 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             
             <button type="submit" disabled={isAuthenticating} className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-semibold rounded-lg transition-colors flex justify-center items-center gap-2">
@@ -215,12 +244,59 @@ export default function ConnectPage() {
     );
   }
 
+  // LOCATION PERMISSION FLOW
+  if (!user.currentLocation || user.currentLocation.trim() === "") {
+    return (
+      <div className="max-w-md mx-auto px-6 py-20">
+        <div className="bg-white p-8 rounded-2xl border border-stone-200 shadow-sm text-center">
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Map className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-stone-900 mb-2">Set Your Location</h1>
+          <p className="text-stone-500 text-sm mb-6 leading-relaxed">
+            To find nearby travelers, AegisCircle needs your current location. This is only used to match you with others who opt in — it's never shown to anyone unless you choose to share it.
+          </p>
+          
+          {locationError && <div className="p-3 bg-red-50 text-red-600 text-sm font-semibold rounded-lg mb-4">{locationError}</div>}
+
+          <div className="space-y-3">
+            <button 
+              onClick={requestLocation} 
+              disabled={isRequestingLocation}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex justify-center items-center gap-2"
+            >
+              {isRequestingLocation && <Loader2 className="w-4 h-4 animate-spin" />}
+              Grant Permission
+            </button>
+
+            <form onSubmit={handleManualLocationSubmit} className="pt-4 border-t border-stone-100 flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Or enter city manually (e.g. Delhi)"
+                value={manualLocation}
+                onChange={(e) => setManualLocation(e.target.value)}
+                className="flex-1 px-4 py-2 bg-stone-50 border border-stone-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+              />
+              <button 
+                type="submit" 
+                disabled={isRequestingLocation || !manualLocation.trim()}
+                className="px-4 py-2 bg-stone-900 text-white text-sm font-semibold rounded-lg hover:bg-stone-800 disabled:opacity-50"
+              >
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (activeChat) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-12">
         <ChatView 
           connection={activeChat} 
-          currentUserId={userId} 
+          currentUserId={user.id} 
           token={token}
           onBack={() => setActiveChat(null)} 
           onAuthError={handleAuthError}
@@ -229,8 +305,8 @@ export default function ConnectPage() {
     );
   }
 
-  const pendingIncoming = connections.filter(c => c.recipientId && c.recipientId._id === userId && c.status === 'pending');
-  const pendingOutgoing = connections.filter(c => c.requesterId && c.requesterId._id === userId && c.status === 'pending');
+  const pendingIncoming = connections.filter(c => c.recipientId && c.recipientId._id === user.id && c.status === 'pending');
+  const pendingOutgoing = connections.filter(c => c.requesterId && c.requesterId._id === user.id && c.status === 'pending');
   const activeConnections = connections.filter(c => c.status === 'accepted');
 
   return (
@@ -241,18 +317,24 @@ export default function ConnectPage() {
         <div>
           <h1 className="text-2xl font-bold text-stone-900 flex items-center gap-2 mb-1">
             <Users className="w-6 h-6 text-emerald-600" />
-            Safety Buddy
+            Yatri Connect
           </h1>
-          <p className="text-sm text-stone-500 max-w-md leading-relaxed">
+          <p className="text-sm text-stone-500 max-w-md leading-relaxed mb-3">
             Turning on visibility lets other verified travelers near you send connection requests. Your exact location is never shared until you actively accept and share it in chat.
           </p>
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="w-4 h-4 text-stone-400" />
+            <span className="font-semibold text-stone-700">{user.currentLocation}</span>
+            <button 
+              onClick={() => updateUserLocationState("")} // Clears location to re-trigger flow
+              className="text-emerald-600 hover:text-emerald-700 font-semibold ml-2 underline decoration-emerald-600/30 underline-offset-2"
+            >
+              Update location
+            </button>
+          </div>
         </div>
         
         <div className="flex flex-col items-end gap-3 shrink-0">
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-red-600 transition-colors bg-stone-100 hover:bg-red-50 px-3 py-1.5 rounded-md">
-            <LogOut className="w-3 h-3" /> Log Out
-          </button>
-          
           <label className="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" className="sr-only peer" checked={visibility} onChange={handleToggleVisibility} />
             <div className="w-14 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>

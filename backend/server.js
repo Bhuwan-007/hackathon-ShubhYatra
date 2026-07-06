@@ -43,8 +43,10 @@ const emergencyRoutes = require('./routes/emergency');
 const reportRoutes = require('./routes/reports');
 const buddyRoutes = require('./routes/buddies');
 const authRoutes = require('./routes/auth');
+const profileRoutes = require('./routes/profile');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 app.use('/api/briefing', briefingRoutes);
 app.use('/api/scan-image', scanRoutes);
 app.use('/api/emergency-plan', emergencyRoutes);
