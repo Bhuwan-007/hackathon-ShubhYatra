@@ -15,12 +15,12 @@ export async function fetchBriefing(location, travelerType) {
   } catch (error) { throw error; }
 }
 
-export async function fetchEmergencyPlan(location, emergencyType) {
+export async function fetchEmergencyPlan(location, landmarks, emergencyType) {
   try {
     const response = await fetch(`${API_URL}/emergency-plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location, emergencyType }),
+      body: JSON.stringify({ location, landmarks, emergencyType }),
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

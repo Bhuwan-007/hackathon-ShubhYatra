@@ -104,7 +104,7 @@ function getFallbackBriefing(location, travelerType, backgroundData = {}) {
   };
 }
 
-const generateEmergencyPlan = async (location, emergencyType) => {
+const generateEmergencyPlan = async (location, landmarks, emergencyType) => {
   try {
     const genAI = getGenAI();
     if (!genAI) {
@@ -113,14 +113,17 @@ const generateEmergencyPlan = async (location, emergencyType) => {
     }
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `
-You are an expert AI crisis manager. A tourist is experiencing an emergency and needs an immediate action plan.
-Location: ${location}
+You are an expert AI crisis manager and local guide. A tourist is experiencing an emergency or is lost, and needs an immediate action plan.
+General Location: ${location}
+${landmarks ? `Specific Landmarks/Surroundings: ${landmarks}` : ''}
 Emergency Type: ${emergencyType}
+
+If the emergency type is 'lost_directions', use the provided landmarks to give them immediate, step-by-step directions to a safe, well-lit main street or a major transit hub.
 
 Respond with strictly valid JSON only. Do not include markdown formatting like \`\`\`json.
 Generate a JSON object with EXACTLY these fields:
 {
-  "steps": ["Step 1: Immediate action", "Step 2: Who to contact", "Step 3: What to prepare"],
+  "steps": ["Step 1: Immediate action or direction", "Step 2: Who to contact or where to walk", "Step 3: What to look out for"],
   "key_contacts": {
     "police": "local number",
     "medical_or_other": "local number or advice",

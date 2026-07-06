@@ -5,6 +5,7 @@ import { AlertCircle, Phone, Loader2 } from "lucide-react";
 
 export default function EmergencyPage() {
   const [location, setLocation] = useState("");
+  const [landmarks, setLandmarks] = useState("");
   const [loadingType, setLoadingType] = useState(null);
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState(null);
@@ -19,7 +20,7 @@ export default function EmergencyPage() {
     setPlan(null);
 
     try {
-      const data = await fetchEmergencyPlan(location, type);
+      const data = await fetchEmergencyPlan(location, landmarks, type);
       setPlan(data);
     } catch (err) {
       setError(err.message || "Failed to load emergency plan.");
@@ -38,15 +39,27 @@ export default function EmergencyPage() {
         <p className="text-stone-500">Immediate, calm action plans for crisis situations.</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-8">
-        <label className="block text-sm font-bold text-stone-700 mb-2">Where are you right now?</label>
-        <input 
-          type="text" 
-          placeholder="e.g. Eiffel Tower, Paris" 
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-red-500/20 outline-none text-lg"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-        />
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-8 space-y-4">
+        <div>
+          <label className="block text-sm font-bold text-stone-700 mb-2">Where are you right now?</label>
+          <input 
+            type="text" 
+            placeholder="e.g. Eiffel Tower, Paris" 
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-red-500/20 outline-none text-lg"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-bold text-stone-700 mb-2">Landmarks / Surroundings (Optional)</label>
+          <input 
+            type="text" 
+            placeholder="e.g. Next to a blue pharmacy and a large statue" 
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-red-500/20 outline-none text-base"
+            value={landmarks}
+            onChange={e => setLandmarks(e.target.value)}
+          />
+        </div>
       </div>
 
       {error && (
@@ -56,23 +69,50 @@ export default function EmergencyPage() {
       )}
 
       {!plan && (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           <button 
             onClick={() => handleEmergency('lost_passport')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-8 bg-white border-2 border-stone-200 hover:border-amber-400 rounded-2xl transition-all group disabled:opacity-50"
+            className="flex flex-col items-center justify-center p-6 bg-white border-2 border-stone-200 hover:border-amber-400 rounded-2xl transition-all group disabled:opacity-50"
           >
             {loadingType === 'lost_passport' ? <Loader2 className="w-8 h-8 animate-spin text-stone-400 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🛂</div>}
-            <span className="font-bold text-lg text-stone-800">Lost Passport</span>
+            <span className="font-bold text-base text-stone-800">Lost Passport</span>
           </button>
           
           <button 
             onClick={() => handleEmergency('medical')}
             disabled={loadingType !== null}
-            className="flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-100 hover:border-red-400 rounded-2xl transition-all group disabled:opacity-50"
+            className="flex flex-col items-center justify-center p-6 bg-red-50 border-2 border-red-100 hover:border-red-400 rounded-2xl transition-all group disabled:opacity-50"
           >
             {loadingType === 'medical' ? <Loader2 className="w-8 h-8 animate-spin text-red-400 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🏥</div>}
-            <span className="font-bold text-lg text-red-900">Medical Help</span>
+            <span className="font-bold text-base text-red-900">Medical Help</span>
+          </button>
+
+          <button 
+            onClick={() => handleEmergency('theft')}
+            disabled={loadingType !== null}
+            className="flex flex-col items-center justify-center p-6 bg-stone-900 border-2 border-stone-800 hover:border-amber-500 rounded-2xl transition-all group disabled:opacity-50"
+          >
+            {loadingType === 'theft' ? <Loader2 className="w-8 h-8 animate-spin text-stone-400 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🚨</div>}
+            <span className="font-bold text-base text-stone-100">Theft / Robbery</span>
+          </button>
+
+          <button 
+            onClick={() => handleEmergency('harassment')}
+            disabled={loadingType !== null}
+            className="flex flex-col items-center justify-center p-6 bg-indigo-50 border-2 border-indigo-100 hover:border-indigo-400 rounded-2xl transition-all group disabled:opacity-50"
+          >
+            {loadingType === 'harassment' ? <Loader2 className="w-8 h-8 animate-spin text-indigo-400 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🛡️</div>}
+            <span className="font-bold text-base text-indigo-900">Harassment</span>
+          </button>
+
+          <button 
+            onClick={() => handleEmergency('lost_directions')}
+            disabled={loadingType !== null}
+            className="flex flex-col items-center justify-center p-6 bg-emerald-50 border-2 border-emerald-100 hover:border-emerald-400 rounded-2xl transition-all group disabled:opacity-50 sm:col-span-2 md:col-span-1"
+          >
+            {loadingType === 'lost_directions' ? <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mb-3" /> : <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🗺️</div>}
+            <span className="font-bold text-base text-emerald-900">I'm Lost (Directions)</span>
           </button>
         </div>
       )}
