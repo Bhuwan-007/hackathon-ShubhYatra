@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: var(--color-stone-50);
+    color: var(--color-stone-900);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
