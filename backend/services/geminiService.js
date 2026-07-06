@@ -104,4 +104,55 @@ function getFallbackBriefing(location, travelerType, backgroundData = {}) {
   };
 }
 
-module.exports = { generateSafetyBriefing };
+const generateEmergencyPlan = async (location, emergencyType) => {
+  try {
+    const genAI = getGenAI();
+    if (!genAI) {
+      console.warn("⚠️ GEMINI_API_KEY missing. Returning fallback emergency plan.");
+      return getFallbackEmergencyPlan(location, emergencyType);
+    }
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = `
+You are an expert AI crisis manager. A tourist is experiencing an emergency and needs an immediate action plan.
+Location: ${location}
+Emergency Type: ${emergencyType}
+
+Respond with strictly valid JSON only. Do not include markdown formatting like \`\`\`json.
+Generate a JSON object with EXACTLY these fields:
+{
+  "steps": ["Step 1: Immediate action", "Step 2: Who to contact", "Step 3: What to prepare"],
+  "key_contacts": {
+    "police": "local number",
+    "medical_or_other": "local number or advice",
+    "embassy_advice": "what to search or where to go"
+  }
+}
+`;
+    const result = await model.generateContent(prompt);
+    let jsonText = result.response.text().trim();
+    if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```(?:json)?\n/, '').replace(/\n```$/, '');
+    }
+    return JSON.parse(jsonText);
+  } catch (error) {
+    console.error("❌ Error generating emergency plan:", error);
+    return getFallbackEmergencyPlan(location, emergencyType);
+  }
+};
+
+function getFallbackEmergencyPlan(location, emergencyType) {
+  return {
+    steps: [
+      "Move to a safe, well-lit public area immediately.",
+      `Report the ${emergencyType.replace('_', ' ')} to the local authorities.`,
+      "Contact your country's embassy or consulate for emergency support."
+    ],
+    key_contacts: {
+      police: "112 / 911",
+      medical_or_other: "112 / 911",
+      embassy_advice: "Check your government's travel website for local embassy details."
+    }
+  };
+}
+
+module.exports = { generateSafetyBriefing, generateEmergencyPlan };
