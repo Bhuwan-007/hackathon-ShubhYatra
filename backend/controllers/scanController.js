@@ -54,7 +54,7 @@ Generate a JSON object with EXACTLY these fields:
 `;
 
     // Gemini API call (multimodal: prompt + image) with retry and timeout
-    const result = await withRetryAndTimeout(() => model.generateContent([prompt, imagePart]), 8000, 1);
+    const result = await withRetryAndTimeout(() => model.generateContent([prompt, imagePart]), 20000, 1);
     const textResult = result.response.text();
     
     // Defensively parse JSON (strip markdown fences if present)

@@ -45,7 +45,9 @@ async function generateSafetyBriefing(location, travelerType = []) {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
-You are an expert AI tourist safety advisor. Based on the following background data and the user's traveler type, synthesize a safety briefing for ${location}.
+You are an expert AI tourist safety advisor. Your goal is to synthesize a safety briefing for ${location}.
+You have access to some local Background Data from our database (recent user reports and destination context). Combine this data with your own extensive world knowledge about ${location}.
+Provide concise, factual reasoning for the overall risk score based on known crime rates, cultural context, and any provided data.
 You MUST respond with strictly valid JSON only. Do not include markdown formatting like \`\`\`json.
 
 Location: ${location}
@@ -62,10 +64,11 @@ Generate a JSON object with EXACTLY these fields:
     "ambulance": "<number string>",
     "nearest_embassy": "<details string>"
   },
-  "accessibility_notes": [<array of strings tailored SPECIFICALLY to the travelerType. E.g. extra caution for solo, step-free for disabled>]
+  "accessibility_notes": [<array of strings tailored SPECIFICALLY to the travelerType. E.g. extra caution for solo, step-free for disabled>],
+  "reasoning": [<array of 1-3 short strings explaining why this risk score was given, citing specific known facts about the location or the provided background data>]
 }
 `;
-    const result = await withRetryAndTimeout(() => model.generateContent(prompt), 8000, 1);
+    const result = await withRetryAndTimeout(() => model.generateContent(prompt), 20000, 1);
     const textResult = result.response.text();
     
     // 4. Defensively parse JSON (strip markdown fences if present)
@@ -104,7 +107,8 @@ function getFallbackBriefing(location, travelerType, backgroundData = {}) {
       `Stay vigilant in crowded areas in ${location}.`,
       travelerType.includes('solo') ? "As a solo traveler, avoid unlit alleys at night and share your itinerary with someone." : "Keep your group together.",
       travelerType.includes('disabled') ? "Research step-free access in advance as historic areas may lack ramps." : "Standard precautions apply."
-    ].filter(Boolean)
+    ].filter(Boolean),
+    reasoning: dest ? ["Based on general safety advisories for this region."] : ["No specific data found, providing general precautions."]
   };
 }
 
@@ -135,7 +139,7 @@ Generate a JSON object with EXACTLY these fields:
   }
 }
 `;
-    const result = await withRetryAndTimeout(() => model.generateContent(prompt), 8000, 1);
+    const result = await withRetryAndTimeout(() => model.generateContent(prompt), 20000, 1);
     let jsonText = result.response.text().trim();
     if (jsonText.startsWith('```')) {
       jsonText = jsonText.replace(/^```(?:json)?\n/, '').replace(/\n```$/, '');

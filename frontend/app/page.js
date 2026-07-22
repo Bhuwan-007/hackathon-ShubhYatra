@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { 
   ShieldAlert, ShieldCheck, MapPin, 
   Search, Loader2, AlertTriangle, User,
-  Phone, Activity, Info
+  Phone, Activity, Info, ChevronDown, ChevronUp
 } from "lucide-react";
 
 const TRAVELER_TYPES = [
@@ -26,6 +26,7 @@ export default function Home() {
   const [briefing, setBriefing] = useState(null);
   const [recentReports, setRecentReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
+  const [showReasoning, setShowReasoning] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export default function Home() {
     try {
       const data = await fetchBriefing(searchLoc, selectedTypes);
       setBriefing(data);
+      setShowReasoning(false);
     } catch (err) {
       setError(err.message || "Failed to retrieve safety briefing. Please try again.");
     } finally {
@@ -234,22 +236,53 @@ export default function Home() {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
             {/* Risk Score Widget */}
-            <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 p-6 flex flex-col sm:flex-row gap-4 items-center justify-between text-center sm:text-left">
-              <div>
-                <h2 className="text-xl font-bold font-display text-text-main flex items-center justify-center sm:justify-start gap-2">
-                  <Activity className="w-5 h-5 text-primary" />
-                  Overall Risk Score
-                </h2>
-                <p className="text-sm text-text-main/60 mt-1">Based on recent verified reports</p>
+            <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 overflow-hidden">
+              <div className="p-6 flex flex-col sm:flex-row gap-4 items-center justify-between text-center sm:text-left">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-text-main flex items-center justify-center sm:justify-start gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Overall Risk Score
+                  </h2>
+                  <p className="text-sm text-text-main/60 mt-1">Based on recent verified reports</p>
+                </div>
+                <div className={cn(
+                  "flex items-center justify-center w-16 h-16 shrink-0 rounded-full text-2xl font-bold border-4 shadow-sm",
+                  briefing.overall_risk_score < 30 ? "text-emerald-600 border-emerald-200 bg-emerald-50/80" :
+                  briefing.overall_risk_score < 60 ? "text-accent border-accent/30 bg-accent/10" :
+                  "text-alert border-alert/30 bg-alert/10"
+                )}>
+                  {briefing.overall_risk_score}
+                </div>
               </div>
-              <div className={cn(
-                "flex items-center justify-center w-16 h-16 shrink-0 rounded-full text-2xl font-bold border-4 shadow-sm",
-                briefing.overall_risk_score < 30 ? "text-emerald-600 border-emerald-200 bg-emerald-50/80" :
-                briefing.overall_risk_score < 60 ? "text-accent border-accent/30 bg-accent/10" :
-                "text-alert border-alert/30 bg-alert/10"
-              )}>
-                {briefing.overall_risk_score}
-              </div>
+              
+              {/* Reasoning Accordion */}
+              {briefing.reasoning && briefing.reasoning.length > 0 && (
+                <div className="border-t border-white/40 bg-white/20">
+                  <button 
+                    onClick={() => setShowReasoning(!showReasoning)}
+                    className="w-full px-6 py-3 flex items-center justify-center sm:justify-between text-xs font-bold text-text-main/60 hover:text-text-main/80 hover:bg-white/30 transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5" />
+                      Why this score?
+                    </span>
+                    {showReasoning ? <ChevronUp className="w-4 h-4 hidden sm:block" /> : <ChevronDown className="w-4 h-4 hidden sm:block" />}
+                  </button>
+                  
+                  {showReasoning && (
+                    <div className="px-6 pb-5 pt-1 animate-in slide-in-from-top-2 fade-in duration-200">
+                      <ul className="space-y-2">
+                        {briefing.reasoning.map((reason, idx) => (
+                          <li key={idx} className="flex gap-3 text-sm text-text-main/80 items-start">
+                            <span className="w-1.5 h-1.5 rounded-full bg-text-main/30 mt-1.5 shrink-0" />
+                            <span className="leading-relaxed font-medium">{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
