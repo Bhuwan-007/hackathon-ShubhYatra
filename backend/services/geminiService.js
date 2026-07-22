@@ -3,7 +3,7 @@ const { getGenAI, withRetryAndTimeout } = require('../utils/geminiHelper');
 const DestinationRisk = require('../models/DestinationRisk');
 const UserReport = require('../models/UserReport');
 
-async function generateSafetyBriefing(location, travelerType = []) {
+async function generateSafetyBriefing(location, travelerType = [], language = 'en') {
   let backgroundData = { destinationContext: null, recentReports: [] };
   
   try {
@@ -39,7 +39,7 @@ async function generateSafetyBriefing(location, travelerType = []) {
     // If Gemini key is missing, fallback immediately
     if (!genAI) {
       console.warn("⚠️ GEMINI_API_KEY is missing or invalid. Returning fallback briefing.");
-      return getFallbackBriefing(location, travelerType, backgroundData);
+      return getFallbackBriefing(location, travelerType, backgroundData, language);
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -49,6 +49,7 @@ You are an expert AI tourist safety advisor. Your goal is to synthesize a safety
 You have access to some local Background Data from our database (recent user reports and destination context). Combine this data with your own extensive world knowledge about ${location}.
 Provide concise, factual reasoning for the overall risk score based on known crime rates, cultural context, and any provided data.
 You MUST respond with strictly valid JSON only. Do not include markdown formatting like \`\`\`json.
+The JSON keys MUST be in English, but the string VALUES and array ITEMS must be generated in ${language === 'hi' ? 'Hindi (हिंदी)' : 'English'}.
 
 Location: ${location}
 Traveler Type: ${travelerType.length > 0 ? travelerType.join(', ') : 'standard'}
@@ -64,8 +65,8 @@ Generate a JSON object with EXACTLY these fields:
     "ambulance": "<number string>",
     "nearest_embassy": "<details string>"
   },
-  "accessibility_notes": [<array of strings tailored SPECIFICALLY to the travelerType. E.g. extra caution for solo, step-free for disabled>],
-  "reasoning": [<array of 1-3 short strings explaining why this risk score was given, citing specific known facts about the location or the provided background data>]
+  "accessibility_notes": [<array of strings tailored SPECIFICALLY to the travelerType. E.g. extra caution for solo, step-free for disabled, translated to ${language === 'hi' ? 'Hindi' : 'English'}>],
+  "reasoning": [<array of 1-3 short strings explaining why this risk score was given, citing specific known facts about the location or the provided background data, translated to ${language === 'hi' ? 'Hindi' : 'English'}>]
 }
 `;
     const result = await withRetryAndTimeout(() => model.generateContent(prompt), 20000, 1);
@@ -87,14 +88,14 @@ Generate a JSON object with EXACTLY these fields:
   } catch (error) {
     console.error("❌ Error generating safety briefing:", error);
     // Return fallback instead of crashing
-    return getFallbackBriefing(location, travelerType, backgroundData);
+    return getFallbackBriefing(location, travelerType, backgroundData, language);
   }
 }
 
-function getFallbackBriefing(location, travelerType, backgroundData = {}) {
+function getFallbackBriefing(location, travelerType, backgroundData = {}, language = 'en') {
   // Mock fallback so the demo still works offline or on API failure
   const dest = backgroundData?.destinationContext;
-  return {
+  const fallbackEn = {
     overall_risk_score: dest?.overall_risk_score || 50,
     active_scams: dest?.active_scams?.length > 0 ? dest.active_scams : ["Generic pickpocketing", "Overpriced tourist traps"],
     safe_zones: dest?.safe_zones?.length > 0 ? dest.safe_zones : ["Main well-lit tourist streets", "Hotel lobbies"],
@@ -110,14 +111,31 @@ function getFallbackBriefing(location, travelerType, backgroundData = {}) {
     ].filter(Boolean),
     reasoning: dest ? ["Based on general safety advisories for this region."] : ["No specific data found, providing general precautions."]
   };
+
+  if (language === 'hi') {
+    return {
+      overall_risk_score: dest?.overall_risk_score || 50,
+      active_scams: dest?.active_scams?.length > 0 ? dest.active_scams : ["सामान्य पॉकेटमारी", "पर्यटकों को ठगने वाले स्थान"],
+      safe_zones: dest?.safe_zones?.length > 0 ? dest.safe_zones : ["मुख्य अच्छी रोशनी वाली पर्यटन सड़कें", "होटल की लॉबी"],
+      emergency_contacts: fallbackEn.emergency_contacts,
+      accessibility_notes: [
+        `${location} में भीड़-भाड़ वाले क्षेत्रों में सतर्क रहें।`,
+        travelerType.includes('solo') ? "एक अकेले यात्री के रूप में, रात में बिना रोशनी वाली गलियों से बचें और किसी के साथ अपनी यात्रा की जानकारी साझा करें।" : "अपने समूह को एक साथ रखें।",
+        travelerType.includes('disabled') ? "ऐतिहासिक क्षेत्रों में रैंप की कमी हो सकती है, इसलिए पहले से पहुंच के बारे में शोध करें।" : "सामान्य सावधानियां लागू होती हैं।"
+      ].filter(Boolean),
+      reasoning: dest ? ["इस क्षेत्र के लिए सामान्य सुरक्षा सलाहों के आधार पर।"] : ["कोई विशिष्ट डेटा नहीं मिला, सामान्य सावधानियां प्रदान की जा रही हैं।"]
+    };
+  }
+
+  return fallbackEn;
 }
 
-const generateEmergencyPlan = async (location, landmarks, emergencyType) => {
+const generateEmergencyPlan = async (location, landmarks, emergencyType, language = 'en') => {
   try {
     const genAI = getGenAI();
     if (!genAI) {
       console.warn("⚠️ GEMINI_API_KEY missing. Returning fallback emergency plan.");
-      return getFallbackEmergencyPlan(location, emergencyType);
+      return getFallbackEmergencyPlan(location, emergencyType, language);
     }
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `
@@ -129,6 +147,7 @@ Emergency Type: ${emergencyType}
 If the emergency type is 'lost_directions', use the provided landmarks to give them immediate, step-by-step directions to a safe, well-lit main street or a major transit hub.
 
 Respond with strictly valid JSON only. Do not include markdown formatting like \`\`\`json.
+The JSON keys MUST be in English, but the string VALUES must be generated in ${language === 'hi' ? 'Hindi (हिंदी)' : 'English'}.
 Generate a JSON object with EXACTLY these fields:
 {
   "steps": ["Step 1: Immediate action or direction", "Step 2: Who to contact or where to walk", "Step 3: What to look out for"],
@@ -147,11 +166,26 @@ Generate a JSON object with EXACTLY these fields:
     return JSON.parse(jsonText);
   } catch (error) {
     console.error("❌ Error generating emergency plan:", error);
-    return getFallbackEmergencyPlan(location, emergencyType);
+    return getFallbackEmergencyPlan(location, emergencyType, language);
   }
 };
 
-function getFallbackEmergencyPlan(location, emergencyType) {
+function getFallbackEmergencyPlan(location, emergencyType, language = 'en') {
+  if (language === 'hi') {
+    return {
+      steps: [
+        "तुरंत एक सुरक्षित, अच्छी रोशनी वाले सार्वजनिक क्षेत्र में जाएँ।",
+        `स्थानीय अधिकारियों को ${emergencyType.replace('_', ' ')} की रिपोर्ट करें।`,
+        "आपातकालीन सहायता के लिए अपने देश के दूतावास या वाणिज्य दूतावास से संपर्क करें।"
+      ],
+      key_contacts: {
+        police: "112 / 911",
+        medical_or_other: "112 / 911",
+        embassy_advice: "स्थानीय दूतावास के विवरण के लिए अपनी सरकार की यात्रा वेबसाइट देखें।"
+      }
+    };
+  }
+
   return {
     steps: [
       "Move to a safe, well-lit public area immediately.",

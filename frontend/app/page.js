@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchBriefing, fetchRecentReports } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/lib/utils";
 import { 
   ShieldAlert, ShieldCheck, MapPin, 
@@ -27,7 +28,9 @@ export default function Home() {
   const [recentReports, setRecentReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [showReasoning, setShowReasoning] = useState(false);
+  
   const toast = useToast();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     const loadRecent = async () => {
@@ -36,13 +39,20 @@ export default function Home() {
         setRecentReports(data);
       } catch (err) {
         console.error("Failed to fetch recent reports", err);
-        toast.error("Failed to fetch live safety pulse.");
       } finally {
         setLoadingReports(false);
       }
     };
     loadRecent();
   }, []);
+
+  // Auto-refetch when language changes if we already have a briefing
+  useEffect(() => {
+    if (briefing && location && !loading) {
+      handleSearch(null, location);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
   const handleToggleType = (id) => {
     setSelectedTypes(prev => 
@@ -60,11 +70,11 @@ export default function Home() {
     setBriefing(null);
 
     try {
-      const data = await fetchBriefing(searchLoc, selectedTypes);
+      const data = await fetchBriefing(searchLoc, selectedTypes, language);
       setBriefing(data);
       setShowReasoning(false);
     } catch (err) {
-      setError(err.message || "Failed to retrieve safety briefing. Please try again.");
+      setError(t('home.error.fetch'));
     } finally {
       setLoading(false);
     }
@@ -72,12 +82,12 @@ export default function Home() {
 
   const handleQuickSearch = (quickLocation) => {
     setLocation(quickLocation);
-    // Slight delay to allow state to update before submitting
     setTimeout(() => {
-      const formEvent = { preventDefault: () => {} };
-      handleSearch(formEvent, quickLocation);
+      handleSearch(null, quickLocation);
     }, 0);
   };
+
+  const displayFontClass = language === 'hi' ? 'font-sans' : 'font-display';
 
   return (
     <div className="font-sans selection:bg-secondary/50">
@@ -86,11 +96,13 @@ export default function Home() {
         
         {/* Hero Section */}
         <div className="text-center mb-12 space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter font-display text-text-main">
-            Travel <span className="text-primary">Safely</span>, Anywhere.
+          <h1 className={cn("text-4xl md:text-5xl font-bold tracking-tighter text-text-main", displayFontClass)}>
+            {t('home.hero.title1')}
+            <span className="text-primary">{t('home.hero.title2')}</span>
+            {t('home.hero.title3')}
           </h1>
           <p className="text-lg text-text-main/70 max-w-2xl mx-auto">
-            Get instant, AI-curated safety briefings tailored to your specific needs and destination. We analyze local reports so you can explore with confidence.
+            {t('home.hero.subtitle')}
           </p>
         </div>
 
@@ -102,13 +114,13 @@ export default function Home() {
             <div className="space-y-2">
               <label htmlFor="location" className="text-sm font-semibold text-text-main flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-text-main/50" />
-                Where are you going?
+                {t('home.search.label')}
               </label>
               <div className="relative">
                 <input
                   id="location"
                   type="text"
-                  placeholder="e.g. Paharganj, Delhi or Montmartre, Paris"
+                  placeholder={t('home.search.placeholder')}
                   className="w-full pl-4 pr-12 py-3 rounded-xl border border-white/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base bg-white/50 backdrop-blur-sm shadow-inner placeholder:text-text-main/40"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
@@ -125,7 +137,7 @@ export default function Home() {
               
               {/* Quick Destinations */}
               <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-xs text-text-main/50 font-medium mr-1">Trending:</span>
+                <span className="text-xs text-text-main/50 font-medium mr-1">{t('home.search.trending')}</span>
                 {["Paharganj, Delhi", "Montmartre, Paris", "Khao San Road, Bangkok"].map((dest) => (
                   <button
                     key={dest}
@@ -143,7 +155,7 @@ export default function Home() {
             <div className="space-y-3">
               <label className="text-sm font-semibold text-text-main flex items-center gap-2">
                 <User className="w-4 h-4 text-text-main/50" />
-                Customize your briefing (Optional)
+                {t('home.search.customize')}
               </label>
               <div className="flex flex-wrap gap-2">
                 {TRAVELER_TYPES.map(type => {
@@ -189,12 +201,12 @@ export default function Home() {
           </div>
         )}
 
-        {/* Live Safety Pulse (Shown when no briefing is active) */}
+        {/* Live Safety Pulse */}
         {!briefing && !loading && (
           <div className="mt-12 animate-in fade-in duration-500">
-            <h2 className="text-xl font-bold font-display text-text-main mb-6 flex items-center gap-2">
+            <h2 className={cn("text-xl font-bold text-text-main mb-6 flex items-center gap-2", displayFontClass)}>
               <Activity className="w-5 h-5 text-accent" />
-              Live Safety Pulse
+              {t('home.pulse.title')}
             </h2>
             
             {loadingReports ? (
@@ -226,7 +238,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-text-main/50">No recent reports available.</p>
+              <p className="text-sm text-text-main/50">{t('home.pulse.empty')}</p>
             )}
           </div>
         )}
@@ -239,11 +251,11 @@ export default function Home() {
             <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 overflow-hidden">
               <div className="p-6 flex flex-col sm:flex-row gap-4 items-center justify-between text-center sm:text-left">
                 <div>
-                  <h2 className="text-xl font-bold font-display text-text-main flex items-center justify-center sm:justify-start gap-2">
+                  <h2 className={cn("text-xl font-bold text-text-main flex items-center justify-center sm:justify-start gap-2", displayFontClass)}>
                     <Activity className="w-5 h-5 text-primary" />
-                    Overall Risk Score
+                    {t('briefing.score.title')}
                   </h2>
-                  <p className="text-sm text-text-main/60 mt-1">Based on recent verified reports</p>
+                  <p className="text-sm text-text-main/60 mt-1">{t('briefing.score.subtitle')}</p>
                 </div>
                 <div className={cn(
                   "flex items-center justify-center w-16 h-16 shrink-0 rounded-full text-2xl font-bold border-4 shadow-sm",
@@ -264,7 +276,7 @@ export default function Home() {
                   >
                     <span className="flex items-center gap-1.5">
                       <Info className="w-3.5 h-3.5" />
-                      Why this score?
+                      {t('briefing.reasoning.button')}
                     </span>
                     {showReasoning ? <ChevronUp className="w-4 h-4 hidden sm:block" /> : <ChevronDown className="w-4 h-4 hidden sm:block" />}
                   </button>
@@ -288,9 +300,9 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Active Scams */}
               <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 p-6">
-                <h3 className="text-lg font-bold font-display text-text-main flex items-center gap-2 mb-4">
+                <h3 className={cn("text-lg font-bold text-text-main flex items-center gap-2 mb-4", displayFontClass)}>
                   <ShieldAlert className="w-5 h-5 text-accent" />
-                  Active Scams to Watch
+                  {t('briefing.scams.title')}
                 </h3>
                 {briefing.active_scams?.length > 0 ? (
                   <ul className="space-y-3">
@@ -302,15 +314,15 @@ export default function Home() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-text-main/50 italic">No active scams reported.</p>
+                  <p className="text-sm text-text-main/50 italic">{t('briefing.scams.empty')}</p>
                 )}
               </div>
 
               {/* Safe Zones */}
               <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 p-6">
-                <h3 className="text-lg font-bold font-display text-text-main flex items-center gap-2 mb-4">
+                <h3 className={cn("text-lg font-bold text-text-main flex items-center gap-2 mb-4", displayFontClass)}>
                   <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                  Known Safe Zones
+                  {t('briefing.safezones.title')}
                 </h3>
                 {briefing.safe_zones?.length > 0 ? (
                   <ul className="space-y-3">
@@ -322,7 +334,7 @@ export default function Home() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-text-main/50 italic">No safe zones explicitly reported.</p>
+                  <p className="text-sm text-text-main/50 italic">{t('briefing.safezones.empty')}</p>
                 )}
               </div>
             </div>
@@ -330,9 +342,9 @@ export default function Home() {
             {/* Accessibility Notes (Highlighted) */}
             {briefing.accessibility_notes?.length > 0 && (
               <div className="bg-secondary/30 backdrop-blur-xl rounded-2xl border border-secondary/50 p-6 shadow-sm">
-                <h3 className="text-lg font-bold font-display text-text-main flex items-center gap-2 mb-4">
+                <h3 className={cn("text-lg font-bold text-text-main flex items-center gap-2 mb-4", displayFontClass)}>
                   <Info className="w-5 h-5 text-primary" />
-                  Tailored Travel Advice
+                  {t('briefing.advice.title')}
                 </h3>
                 <ul className="space-y-3">
                   {briefing.accessibility_notes.map((note, i) => (
@@ -347,21 +359,21 @@ export default function Home() {
 
             {/* Emergency Contacts */}
             <div className="bg-background-dark rounded-2xl shadow-xl p-6 text-background-light overflow-hidden relative">
-              <h3 className="text-lg font-bold font-display flex items-center gap-2 mb-6 text-background-light relative z-10">
+              <h3 className={cn("text-lg font-bold flex items-center gap-2 mb-6 text-background-light relative z-10", displayFontClass)}>
                 <Phone className="w-5 h-5 text-primary" />
-                Emergency Contacts
+                {t('briefing.emergency.title')}
               </h3>
               <div className="grid sm:grid-cols-3 gap-6 relative z-10">
                 <div>
-                  <div className="text-xs text-background-light/60 font-semibold uppercase tracking-wider mb-1">Police</div>
+                  <div className="text-xs text-background-light/60 font-semibold uppercase tracking-wider mb-1">{t('briefing.emergency.police')}</div>
                   <div className="text-xl font-bold tracking-tight">{briefing.emergency_contacts?.police || "N/A"}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-background-light/60 font-semibold uppercase tracking-wider mb-1">Ambulance</div>
+                  <div className="text-xs text-background-light/60 font-semibold uppercase tracking-wider mb-1">{t('briefing.emergency.ambulance')}</div>
                   <div className="text-xl font-bold tracking-tight">{briefing.emergency_contacts?.ambulance || "N/A"}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-background-light/60 font-semibold uppercase tracking-wider mb-1">Nearest Embassy</div>
+                  <div className="text-xs text-background-light/60 font-semibold uppercase tracking-wider mb-1">{t('briefing.emergency.embassy')}</div>
                   <div className="text-sm font-semibold text-background-light/90 leading-snug">{briefing.emergency_contacts?.nearest_embassy || "N/A"}</div>
                 </div>
               </div>

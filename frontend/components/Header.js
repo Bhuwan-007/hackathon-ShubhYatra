@@ -4,17 +4,19 @@ import { Shield, Route, LogOut, User, LayoutDashboard } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Header() {
   const pathname = usePathname();
   const { user, logout, isReady } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   
   const links = [
-    { href: '/', label: 'Safety Briefings' },
-    { href: '/scan', label: 'Scam Scanner' },
-    { href: '/report', label: 'Report Hazard' },
-    { href: '/emergency', label: 'Emergency' },
-    { href: '/connect', label: 'Yatri Connect' },
+    { href: '/', label: t('nav.briefing') },
+    { href: '/scan', label: t('nav.scan') },
+    { href: '/report', label: t('nav.report') },
+    { href: '/emergency', label: t('nav.emergency') },
+    { href: '/connect', label: t('nav.connect') },
   ];
 
   return (
@@ -46,10 +48,20 @@ export default function Header() {
             ))}
           </nav>
           
-          {/* Auth State Indicator */}
-          {isReady && (
-            <div className="flex items-center gap-3 md:ml-4 md:pl-4 md:border-l md:border-white/40">
-              {user ? (
+          <div className="flex items-center gap-3 md:ml-4 md:pl-4 md:border-l md:border-white/40">
+            {/* Language Toggle */}
+            <button 
+              onClick={toggleLanguage}
+              className="text-xs font-bold text-text-main/70 hover:text-primary transition-colors bg-white/50 px-2 py-1 rounded-md shadow-sm border border-white/60 cursor-pointer flex items-center"
+              title="Toggle Language (English/Hindi)"
+            >
+              {language === 'en' ? 'EN / हिंदी' : 'हिंदी / EN'}
+            </button>
+
+            {/* Auth State Indicator */}
+            {isReady && (
+              <>
+                {user ? (
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-semibold text-text-main/70 flex items-center gap-1">
                     <User className="w-3 h-3" />
@@ -61,17 +73,18 @@ export default function Header() {
                   {user.isAdmin && (
                     <Link href="/admin" className="text-xs font-bold text-accent hover:text-accent/80 transition-colors flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-md" title="Admin Dashboard">
                       <LayoutDashboard className="w-4 h-4" />
-                      <span className="hidden sm:inline">Admin</span>
+                      <span className="hidden sm:inline">{t('nav.admin')}</span>
                     </Link>
                   )}
                 </div>
               ) : (
                 <Link href="/connect" className="text-xs font-bold text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg transition-colors shadow-sm">
-                  Sign In
+                  {t('nav.login')}
                 </Link>
-              )}
-            </div>
-          )}
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

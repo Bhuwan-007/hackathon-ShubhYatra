@@ -1,11 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
-export async function fetchBriefing(location, travelerType) {
+export async function fetchBriefing(location, travelerType, language = 'en') {
   try {
     const response = await fetch(`${API_URL}/briefing`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location, travelerType }),
+      body: JSON.stringify({ location, travelerType, language }),
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -15,12 +15,12 @@ export async function fetchBriefing(location, travelerType) {
   } catch (error) { throw error; }
 }
 
-export async function fetchEmergencyPlan(location, landmarks, emergencyType) {
+export async function fetchEmergencyPlan(location, landmarks, emergencyType, language = 'en') {
   try {
     const response = await fetch(`${API_URL}/emergency-plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location, landmarks, emergencyType }),
+      body: JSON.stringify({ location, landmarks, emergencyType, language }),
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -44,7 +44,13 @@ export async function submitHazardReport(formData) {
   } catch (error) { throw error; }
 }
 
-export async function scanScamImage(formData) {
+export async function scanScamImage(formData, language = 'en') {
+  // If formData is FormData, we need to append language if not present.
+  // We can just append it directly before sending.
+  if (formData instanceof FormData && !formData.has('language')) {
+    formData.append('language', language);
+  }
+  
   try {
     const response = await fetch(`${API_URL}/scan-image`, {
       method: 'POST',

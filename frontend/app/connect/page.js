@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils";
 import ChatView from "@/components/ChatView";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ConnectPage() {
   const { token, user, isReady, login, logout, updateUserLocationState } = useAuth();
   const toast = useToast();
+  const { language, t } = useLanguage();
   
   // Tab state
   const [activeTab, setActiveTab] = useState("discover"); 
@@ -38,6 +40,8 @@ export default function ConnectPage() {
   const [isRequestingLocation, setIsRequestingLocation] = useState(false);
   const [manualLocation, setManualLocation] = useState("");
   const [locationError, setLocationError] = useState("");
+
+  const displayFontClass = language === 'hi' ? 'font-sans' : 'font-display';
 
   const handleAuthError = (err) => {
     if (err.message === 'AUTH_EXPIRED') {
@@ -75,7 +79,6 @@ export default function ConnectPage() {
     setVisibility(newVal);
     try {
       await updateUserVisibility(newVal, token);
-      toast.success(newVal ? "Visibility turned on" : "Visibility turned off");
     } catch (err) {
       setVisibility(!newVal); // revert
       handleAuthError(err);
@@ -198,24 +201,24 @@ export default function ConnectPage() {
           <div className="w-16 h-16 bg-accent/20 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Key className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold font-display text-text-main mb-2">Secure Connection</h1>
-          <p className="text-text-main/70 text-sm mb-8">Sign in to connect with other verified travelers securely.</p>
+          <h1 className={cn("text-2xl font-bold text-text-main mb-2", displayFontClass)}>{t('connect.auth.title')}</h1>
+          <p className="text-text-main/70 text-sm mb-8">{t('connect.auth.subtitle')}</p>
           
           {authError && <div className="p-3 bg-alert/10 text-alert border border-alert/20 text-sm font-bold rounded-lg mb-4">{authError}</div>}
           
           <form onSubmit={handleAuthSubmit} className="space-y-4 text-left">
             {!isLoginMode && (
               <div>
-                <label className="block text-xs font-bold text-text-main/60 uppercase tracking-wider mb-1">Display Name</label>
+                <label className="block text-xs font-bold text-text-main/60 uppercase tracking-wider mb-1">{t('connect.auth.name')}</label>
                 <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="w-full px-4 py-2 bg-white/50 border border-white/50 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-inner transition-all" required />
               </div>
             )}
             <div>
-              <label className="block text-xs font-bold text-text-main/60 uppercase tracking-wider mb-1">Email</label>
+              <label className="block text-xs font-bold text-text-main/60 uppercase tracking-wider mb-1">{t('connect.auth.email')}</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-2 bg-white/50 border border-white/50 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-inner transition-all" required />
             </div>
             <div>
-              <label className="block text-xs font-bold text-text-main/60 uppercase tracking-wider mb-1">Password</label>
+              <label className="block text-xs font-bold text-text-main/60 uppercase tracking-wider mb-1">{t('connect.auth.password')}</label>
               <div className="relative">
                 <input 
                   type={showPassword ? "text" : "password"} 
@@ -227,7 +230,7 @@ export default function ConnectPage() {
                 <button 
                   type="button" 
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-main/40 hover:text-text-main/70 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-main/40 hover:text-text-main/70 transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -236,7 +239,7 @@ export default function ConnectPage() {
             
             <button type="submit" disabled={isAuthenticating} className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex justify-center items-center gap-2 shadow-md cursor-pointer">
               {isAuthenticating && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isLoginMode ? 'Sign In' : 'Create Account'}
+              {isLoginMode ? t('connect.auth.signin') : t('connect.auth.signup')}
             </button>
           </form>
           
@@ -251,7 +254,7 @@ export default function ConnectPage() {
           </div>
 
           <button onClick={handleDemoLogin} disabled={isAuthenticating} className="w-full py-3 bg-white/50 hover:bg-white/80 text-text-main font-bold rounded-lg transition-colors border border-white/60 shadow-sm cursor-pointer">
-            Continue as Demo User
+            {t('connect.auth.demo')}
           </button>
         </div>
       </div>
@@ -266,9 +269,9 @@ export default function ConnectPage() {
           <div className="w-16 h-16 bg-accent/20 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Map className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold font-display text-text-main mb-2">Set Your Location</h1>
+          <h1 className={cn("text-2xl font-bold text-text-main mb-2", displayFontClass)}>{t('connect.loc.title')}</h1>
           <p className="text-text-main/70 text-sm mb-6 leading-relaxed">
-            To find nearby travelers, AegisCircle needs your current location. This is only used to match you with others who opt in — it's never shown to anyone unless you choose to share it.
+            {t('connect.loc.subtitle')}
           </p>
           
           {locationError && <div className="p-3 bg-alert/10 text-alert border border-alert/20 text-sm font-bold rounded-lg mb-4">{locationError}</div>}
@@ -277,16 +280,16 @@ export default function ConnectPage() {
             <button 
               onClick={requestLocation} 
               disabled={isRequestingLocation}
-              className="w-full py-3 bg-primary hover:bg-primary/90 text-white shadow-md font-bold rounded-lg transition-colors flex justify-center items-center gap-2"
+              className="w-full py-3 bg-primary hover:bg-primary/90 text-white shadow-md font-bold rounded-lg transition-colors flex justify-center items-center gap-2 cursor-pointer"
             >
               {isRequestingLocation && <Loader2 className="w-4 h-4 animate-spin" />}
-              Grant Permission
+              {t('connect.loc.grant')}
             </button>
 
             <form onSubmit={handleManualLocationSubmit} className="pt-4 border-t border-white/40 flex gap-2">
               <input 
                 type="text" 
-                placeholder="Or enter city manually (e.g. Delhi)"
+                placeholder={t('connect.loc.manual')}
                 value={manualLocation}
                 onChange={(e) => setManualLocation(e.target.value)}
                 className="flex-1 px-4 py-2 bg-white/50 border border-white/50 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-inner placeholder:text-text-main/40 transition-all"
@@ -294,9 +297,9 @@ export default function ConnectPage() {
               <button 
                 type="submit" 
                 disabled={isRequestingLocation || !manualLocation.trim()}
-                className="px-4 py-2 bg-accent hover:bg-accent/90 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50 transition-colors"
+                className="px-4 py-2 bg-accent hover:bg-accent/90 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50 transition-colors cursor-pointer"
               >
-                Save
+                {t('connect.loc.save')}
               </button>
             </form>
           </div>
@@ -329,21 +332,21 @@ export default function ConnectPage() {
       {/* Header & Privacy Toggle */}
       <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-sm border border-white/60 p-6 mb-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-display text-text-main flex items-center gap-2 mb-1">
+          <h1 className={cn("text-2xl font-bold text-text-main flex items-center gap-2 mb-1", displayFontClass)}>
             <Users className="w-6 h-6 text-accent" />
-            Yatri Connect
+            {t('connect.main.title')}
           </h1>
           <p className="text-sm text-text-main/70 max-w-md leading-relaxed mb-3">
-            Turning on visibility lets other verified travelers near you send connection requests. Your exact location is never shared until you actively accept and share it in chat.
+            {t('connect.main.desc')}
           </p>
           <div className="flex items-center gap-2 text-sm">
             <MapPin className="w-4 h-4 text-text-main/50" />
             <span className="font-bold text-text-main/90">{user.currentLocation}</span>
             <button 
               onClick={() => updateUserLocationState("")} // Clears location to re-trigger flow
-              className="text-primary hover:text-primary/80 font-bold ml-2 underline decoration-primary/30 underline-offset-2 transition-colors"
+              className="text-primary hover:text-primary/80 font-bold ml-2 underline decoration-primary/30 underline-offset-2 transition-colors cursor-pointer"
             >
-              Update location
+              {t('connect.main.update_loc')}
             </button>
           </div>
         </div>
@@ -352,7 +355,7 @@ export default function ConnectPage() {
           <label className="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" className="sr-only peer" checked={visibility} onChange={handleToggleVisibility} />
             <div className="w-14 h-7 bg-white/50 border border-white/60 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white/50 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary shadow-inner"></div>
-            <span className="ml-3 text-sm font-bold text-text-main">{visibility ? 'Visible' : 'Hidden'}</span>
+            <span className="ml-3 text-sm font-bold text-text-main">{visibility ? t('connect.main.visible') : t('connect.main.hidden')}</span>
           </label>
         </div>
       </div>
@@ -360,15 +363,15 @@ export default function ConnectPage() {
       {/* Navigation Tabs */}
       <div className="flex gap-2 p-1 bg-white/30 backdrop-blur-sm border border-white/40 rounded-xl mb-8">
         {[
-          { id: 'discover', label: 'Discover', icon: <MapPin className="w-4 h-4" /> },
-          { id: 'requests', label: `Requests ${pendingIncoming.length > 0 ? `(${pendingIncoming.length})` : ''}`, icon: <UserCheck className="w-4 h-4" /> },
-          { id: 'chats', label: 'Chats', icon: <MessageCircle className="w-4 h-4" /> }
+          { id: 'discover', label: t('connect.tabs.discover'), icon: <MapPin className="w-4 h-4" /> },
+          { id: 'requests', label: `${t('connect.tabs.requests')} ${pendingIncoming.length > 0 ? `(${pendingIncoming.length})` : ''}`, icon: <UserCheck className="w-4 h-4" /> },
+          { id: 'chats', label: t('connect.tabs.chats'), icon: <MessageCircle className="w-4 h-4" /> }
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all",
+              "flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all cursor-pointer",
               activeTab === tab.id ? "bg-white text-text-main shadow-sm" : "text-text-main/60 hover:text-text-main/90 hover:bg-white/50"
             )}
           >
@@ -389,8 +392,8 @@ export default function ConnectPage() {
                 {nearby.length === 0 ? (
                   <div className="text-center py-20 bg-white/30 rounded-2xl border border-white/40">
                     <MapPin className="w-12 h-12 text-text-main/30 mx-auto mb-3" />
-                    <h3 className="font-bold font-display text-text-main mb-1">No travelers nearby</h3>
-                    <p className="text-sm text-text-main/60">Make sure your visibility is turned on to see others.</p>
+                    <h3 className={cn("font-bold text-text-main mb-1", displayFontClass)}>{t('connect.discover.empty')}</h3>
+                    <p className="text-sm text-text-main/60">{t('connect.discover.empty_desc')}</p>
                   </div>
                 ) : (
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -414,9 +417,9 @@ export default function ConnectPage() {
                         </div>
                         <button 
                           onClick={() => handleSendRequest(user._id)}
-                          className="w-full py-2.5 bg-primary hover:bg-primary/90 shadow-md text-white rounded-xl text-sm font-bold transition-colors mt-auto"
+                          className="w-full py-2.5 bg-primary hover:bg-primary/90 shadow-md text-white rounded-xl text-sm font-bold transition-colors mt-auto cursor-pointer"
                         >
-                          Send Request
+                          {t('connect.discover.send_req')}
                         </button>
                       </div>
                     ))}
@@ -429,9 +432,9 @@ export default function ConnectPage() {
             {activeTab === 'requests' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xs font-bold text-text-main/50 uppercase tracking-wider mb-4">Incoming Requests</h3>
+                  <h3 className="text-xs font-bold text-text-main/50 uppercase tracking-wider mb-4">{t('connect.requests.incoming')}</h3>
                   {pendingIncoming.length === 0 ? (
-                    <div className="text-sm font-medium text-text-main/60 bg-white/30 p-4 rounded-xl border border-white/40">You have no pending requests.</div>
+                    <div className="text-sm font-medium text-text-main/60 bg-white/30 p-4 rounded-xl border border-white/40">{t('connect.requests.empty')}</div>
                   ) : (
                     <div className="space-y-3">
                       {pendingIncoming.map(conn => (
@@ -442,12 +445,12 @@ export default function ConnectPage() {
                             </div>
                             <div>
                               <div className="font-bold text-text-main">{conn.requesterId?.displayName}</div>
-                              <div className="text-xs font-medium text-text-main/60">Wants to connect in {conn.requesterId?.currentLocation}</div>
+                              <div className="text-xs font-medium text-text-main/60">{t('connect.requests.wants')} {conn.requesterId?.currentLocation}</div>
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => handleRespond(conn._id, 'decline')} className="px-4 py-2 bg-white/60 hover:bg-white/80 text-text-main/70 text-sm font-bold rounded-lg transition-colors">Decline</button>
-                            <button onClick={() => handleRespond(conn._id, 'accept')} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white shadow-sm text-sm font-bold rounded-lg transition-colors">Accept</button>
+                            <button onClick={() => handleRespond(conn._id, 'decline')} className="px-4 py-2 bg-white/60 hover:bg-white/80 text-text-main/70 text-sm font-bold rounded-lg transition-colors cursor-pointer">{t('connect.requests.decline')}</button>
+                            <button onClick={() => handleRespond(conn._id, 'accept')} className="px-4 py-2 bg-primary hover:bg-primary/90 text-white shadow-sm text-sm font-bold rounded-lg transition-colors cursor-pointer">{t('connect.requests.accept')}</button>
                           </div>
                         </div>
                       ))}
@@ -463,8 +466,8 @@ export default function ConnectPage() {
                 {activeConnections.length === 0 ? (
                   <div className="text-center py-20 bg-white/30 rounded-2xl border border-white/40">
                     <MessageCircle className="w-12 h-12 text-text-main/30 mx-auto mb-3" />
-                    <h3 className="font-bold font-display text-text-main mb-1">No active connections yet</h3>
-                    <p className="text-sm text-text-main/60">Head to Discover to find nearby travelers.</p>
+                    <h3 className={cn("font-bold text-text-main mb-1", displayFontClass)}>{t('connect.chats.empty')}</h3>
+                    <p className="text-sm text-text-main/60">{t('connect.chats.empty_desc')}</p>
                   </div>
                 ) : (
                   activeConnections.map(conn => {
@@ -473,7 +476,7 @@ export default function ConnectPage() {
                       <button 
                         key={conn._id} 
                         onClick={() => setActiveChat(conn)}
-                        className="w-full bg-white/50 backdrop-blur-md p-4 rounded-xl border border-white/60 flex items-center gap-4 hover:border-primary transition-colors text-left shadow-sm"
+                        className="w-full bg-white/50 backdrop-blur-md p-4 rounded-xl border border-white/60 flex items-center gap-4 hover:border-primary transition-colors text-left shadow-sm cursor-pointer"
                       >
                         <div className="w-12 h-12 bg-accent/20 text-accent rounded-full flex items-center justify-center font-bold text-lg shrink-0">
                           {buddy?.displayName?.charAt(0).toUpperCase()}
@@ -483,7 +486,7 @@ export default function ConnectPage() {
                             {buddy?.displayName}
                             {buddy?.isVerified && <ShieldCheck className="w-4 h-4 text-accent" />}
                           </div>
-                          <div className="text-sm font-medium text-text-main/60">Tap to view chat and location tools</div>
+                          <div className="text-sm font-medium text-text-main/60">{t('connect.chats.tap')}</div>
                         </div>
                       </button>
                     );

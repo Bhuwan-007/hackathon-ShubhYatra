@@ -7,7 +7,7 @@ const VALID_EMERGENCY_TYPES = ['lost_passport', 'medical', 'theft', 'harassment'
 // POST /api/emergency-plan
 router.post('/', async (req, res) => {
   try {
-    const { location, landmarks, emergencyType } = req.body;
+    const { location, landmarks, emergencyType, language } = req.body;
     
     if (!location) {
       return res.status(400).json({ error: 'Location is required.' });
@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const plan = await generateEmergencyPlan(location, landmarks, emergencyType);
+    const plan = await generateEmergencyPlan(location, landmarks, emergencyType, language || 'en');
     res.json(plan);
   } catch (error) {
     console.error('❌ Error in /api/emergency-plan route:', error);

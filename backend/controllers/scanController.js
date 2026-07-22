@@ -1,7 +1,15 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { getGenAI, withRetryAndTimeout } = require('../utils/geminiHelper');
 
-const getFallbackScanResult = () => {
+const getFallbackScanResult = (language = 'en') => {
+  if (language === 'hi') {
+    return {
+      is_suspicious: true,
+      confidence: 85,
+      explanation: "[मॉक फ़ॉलबैक] छवि एक अनौपचारिक मीटर या बैज दिखाती है, जो इस स्थान पर पर्यटकों के घोटालों के लिए एक सामान्य पैटर्न है।",
+      recommended_action: "जुड़ने से बचें और इसके बजाय एक आधिकारिक सेवा खोजें।"
+    };
+  }
   return {
     is_suspicious: true,
     confidence: 85,
@@ -12,7 +20,7 @@ const getFallbackScanResult = () => {
 
 const scanImage = async (req, res) => {
   try {
-    const { location, user_notes } = req.body;
+    const { location, user_notes, language } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -24,7 +32,7 @@ const scanImage = async (req, res) => {
     // If Gemini key is missing, fallback immediately
     if (!genAI) {
       console.warn("⚠️ GEMINI_API_KEY is missing or invalid. Returning fallback scan result.");
-      return res.json(getFallbackScanResult());
+      return res.json(getFallbackScanResult(language));
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -43,13 +51,14 @@ Context location: ${location || 'Unknown'}
 ${user_notes ? `Additional context from the user: "${user_notes}"` : ''}
 
 You MUST respond with strictly valid JSON only. Do not include markdown formatting like \`\`\`json.
+The JSON keys MUST be in English, but the string VALUES must be generated in ${language === 'hi' ? 'Hindi (हिंदी)' : 'English'}.
 
 Generate a JSON object with EXACTLY these fields:
 {
   "is_suspicious": <boolean>,
   "confidence": <number 0-100>,
-  "explanation": "<string explaining exactly why it looks suspicious or safe>",
-  "recommended_action": "<string advising the user what to do next>"
+  "explanation": "<string explaining exactly why it looks suspicious or safe, translated to ${language === 'hi' ? 'Hindi' : 'English'}>",
+  "recommended_action": "<string advising the user what to do next, translated to ${language === 'hi' ? 'Hindi' : 'English'}>"
 }
 `;
 
@@ -74,7 +83,7 @@ Generate a JSON object with EXACTLY these fields:
   } catch (error) {
     console.error("❌ Error scanning image:", error);
     // Return fallback instead of crashing
-    return res.json(getFallbackScanResult());
+    return res.json(getFallbackScanResult(language));
   }
 };
 

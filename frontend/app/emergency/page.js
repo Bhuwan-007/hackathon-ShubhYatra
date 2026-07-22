@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchEmergencyPlan } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { cn } from "@/lib/utils";
 import { AlertCircle, Phone, Loader2, Book, Activity, AlertTriangle, Shield, Map } from "lucide-react";
 
 export default function EmergencyPage() {
@@ -9,8 +11,18 @@ export default function EmergencyPage() {
   const [landmarks, setLandmarks] = useState("");
   const [loadingType, setLoadingType] = useState(null);
   const [plan, setPlan] = useState(null);
+  const [lastType, setLastType] = useState(null);
   const [error, setError] = useState(null);
   const toast = useToast();
+  const { language, t } = useLanguage();
+
+  // Auto-refetch when language changes if we already have a plan
+  useEffect(() => {
+    if (plan && location && lastType && !loadingType) {
+      handleEmergency(lastType);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
   const handleEmergency = async (type) => {
     if (!location.trim()) {
@@ -19,11 +31,12 @@ export default function EmergencyPage() {
       return;
     }
     setLoadingType(type);
+    setLastType(type);
     setError(null);
     setPlan(null);
 
     try {
-      const data = await fetchEmergencyPlan(location, landmarks, type);
+      const data = await fetchEmergencyPlan(location, landmarks, type, language);
       setPlan(data);
       toast.success("Emergency plan generated.");
     } catch (err) {
@@ -34,32 +47,34 @@ export default function EmergencyPage() {
     }
   };
 
+  const displayFontClass = language === 'hi' ? 'font-sans' : 'font-display';
+
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-alert/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-8 h-8 text-alert" />
         </div>
-        <h1 className="text-3xl font-bold font-display text-text-main mb-2">Emergency Hub</h1>
-        <p className="text-text-main/70">Immediate, calm action plans for crisis situations.</p>
+        <h1 className={cn("text-3xl font-bold text-text-main mb-2", displayFontClass)}>{t('emergency.hero.title')}</h1>
+        <p className="text-text-main/70">{t('emergency.hero.subtitle')}</p>
       </div>
 
       <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 p-6 mb-8 space-y-4">
         <div>
-          <label className="block text-sm font-bold text-text-main/90 mb-2">Where are you right now?</label>
+          <label className="block text-sm font-bold text-text-main/90 mb-2">{t('emergency.form.location')}</label>
           <input 
             type="text" 
-            placeholder="e.g. Eiffel Tower, Paris" 
+            placeholder={t('emergency.form.location_ph')}
             className="w-full px-4 py-3 rounded-xl border border-white/50 focus:ring-2 focus:ring-alert/20 focus:border-alert outline-none text-lg bg-white/50 backdrop-blur-sm shadow-inner placeholder:text-text-main/40 transition-all"
             value={location}
             onChange={e => setLocation(e.target.value)}
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-text-main/90 mb-2">Landmarks / Surroundings (Optional)</label>
+          <label className="block text-sm font-bold text-text-main/90 mb-2">{t('emergency.form.landmarks')}</label>
           <input 
             type="text" 
-            placeholder="e.g. Next to a blue pharmacy and a large statue" 
+            placeholder={t('emergency.form.landmarks_ph')}
             className="w-full px-4 py-3 rounded-xl border border-white/50 focus:ring-2 focus:ring-alert/20 focus:border-alert outline-none text-base bg-white/50 backdrop-blur-sm shadow-inner placeholder:text-text-main/40 transition-all"
             value={landmarks}
             onChange={e => setLandmarks(e.target.value)}
@@ -81,7 +96,7 @@ export default function EmergencyPage() {
             className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {loadingType === 'lost_passport' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <Book className="w-8 h-8 text-text-main/80 mb-3 group-hover:scale-110 transition-transform" />}
-            <span className="font-bold text-base text-text-main/90">Lost Passport</span>
+            <span className="font-bold text-base text-text-main/90">{t('emergency.types.passport')}</span>
           </button>
           
           <button 
@@ -90,7 +105,7 @@ export default function EmergencyPage() {
             className="flex flex-col items-center justify-center p-6 bg-alert/10 backdrop-blur-sm border-2 border-alert/30 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {loadingType === 'medical' ? <Loader2 className="w-8 h-8 animate-spin text-alert/60 mb-3" /> : <Activity className="w-8 h-8 text-alert mb-3 group-hover:scale-110 transition-transform" />}
-            <span className="font-bold text-base text-alert">Medical Help</span>
+            <span className="font-bold text-base text-alert">{t('emergency.types.medical')}</span>
           </button>
 
           <button 
@@ -99,7 +114,7 @@ export default function EmergencyPage() {
             className="flex flex-col items-center justify-center p-6 bg-alert border-2 border-alert hover:bg-alert/90 rounded-2xl transition-all group disabled:opacity-50 shadow-md cursor-pointer"
           >
             {loadingType === 'theft' ? <Loader2 className="w-8 h-8 animate-spin text-white/60 mb-3" /> : <AlertTriangle className="w-8 h-8 text-white mb-3 group-hover:scale-110 transition-transform" />}
-            <span className="font-bold text-base text-white">Theft / Robbery</span>
+            <span className="font-bold text-base text-white">{t('emergency.types.theft')}</span>
           </button>
 
           <button 
@@ -108,7 +123,7 @@ export default function EmergencyPage() {
             className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {loadingType === 'harassment' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <Shield className="w-8 h-8 text-text-main/80 mb-3 group-hover:scale-110 transition-transform" />}
-            <span className="font-bold text-base text-text-main/90">Harassment</span>
+            <span className="font-bold text-base text-text-main/90">{t('emergency.types.harassment')}</span>
           </button>
 
           <button 
@@ -117,7 +132,7 @@ export default function EmergencyPage() {
             className="flex flex-col items-center justify-center p-6 bg-white/40 backdrop-blur-sm border-2 border-white/60 hover:border-alert rounded-2xl transition-all group disabled:opacity-50 sm:col-span-2 md:col-span-1 shadow-sm cursor-pointer"
           >
             {loadingType === 'lost_directions' ? <Loader2 className="w-8 h-8 animate-spin text-text-main/40 mb-3" /> : <Map className="w-8 h-8 text-text-main/80 mb-3 group-hover:scale-110 transition-transform" />}
-            <span className="font-bold text-base text-text-main/90">I'm Lost (Directions)</span>
+            <span className="font-bold text-base text-text-main/90">{t('emergency.types.lost')}</span>
           </button>
         </div>
       )}
@@ -125,7 +140,7 @@ export default function EmergencyPage() {
       {plan && (
         <div className="bg-white/60 backdrop-blur-2xl rounded-2xl shadow-lg border border-white/80 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
           <div className="bg-alert text-white p-6 shadow-sm">
-            <h2 className="text-2xl font-bold font-display">Action Plan</h2>
+            <h2 className={cn("text-2xl font-bold", displayFontClass)}>{t('emergency.plan.title')}</h2>
             <p className="opacity-90 font-medium">Follow these steps calmly.</p>
           </div>
           
@@ -141,7 +156,7 @@ export default function EmergencyPage() {
 
             {plan.key_contacts && (
               <div className="border-t border-text-main/10 pt-8">
-                <h3 className="font-bold text-text-main/50 uppercase tracking-wider text-sm mb-4">Key Contacts</h3>
+                <h3 className="font-bold text-text-main/50 uppercase tracking-wider text-sm mb-4">{t('emergency.plan.contacts')}</h3>
                 <div className="space-y-4">
                   {Object.entries(plan.key_contacts).map(([key, value]) => (
                     <div key={key} className="flex items-center gap-3 bg-white/50 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/60">
@@ -156,8 +171,8 @@ export default function EmergencyPage() {
               </div>
             )}
 
-            <button onClick={() => setPlan(null)} className="w-full py-4 text-center text-text-main/60 font-bold hover:bg-white/40 hover:text-text-main rounded-xl transition-all border border-transparent hover:border-text-main/10">
-              Clear & Return
+            <button onClick={() => setPlan(null)} className="w-full py-4 text-center text-text-main/60 font-bold hover:bg-white/40 hover:text-text-main rounded-xl transition-all border border-transparent hover:border-text-main/10 cursor-pointer">
+              {t('emergency.plan.clear')}
             </button>
           </div>
         </div>

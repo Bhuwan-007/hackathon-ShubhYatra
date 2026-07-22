@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 import { Fraunces } from 'next/font/google';
 
 const fraunces = Fraunces({ 
@@ -18,14 +19,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={fraunces.variable}>
-      <body className="bg-background-light text-text-main min-h-screen pb-20 md:pb-0">
-        <ToastProvider>
+      <body className="font-sans bg-background-light text-text-main flex flex-col min-h-screen pb-20 md:pb-0">
+        <LanguageProvider>
           <AuthProvider>
-            <Header />
-            {children}
-            <BottomNav />
+            <ToastProvider>
+              <Header />
+              {children}
+              <BottomNav />
+            </ToastProvider>
           </AuthProvider>
-        </ToastProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

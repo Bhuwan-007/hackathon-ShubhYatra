@@ -5,13 +5,13 @@ const { generateSafetyBriefing } = require('../services/geminiService');
 // POST /api/briefing
 router.post('/', async (req, res) => {
   try {
-    const { location, travelerType } = req.body;
+    const { location, travelerType, language } = req.body;
     
     if (!location) {
       return res.status(400).json({ error: 'Location is required in the request body.' });
     }
 
-    const briefing = await generateSafetyBriefing(location, travelerType || []);
+    const briefing = await generateSafetyBriefing(location, travelerType || [], language || 'en');
     res.json(briefing);
   } catch (error) {
     console.error('❌ Error in /api/briefing route:', error);
