@@ -1,13 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { getGenAI, withRetryAndTimeout } = require('../utils/geminiHelper');
 const DestinationRisk = require('../models/DestinationRisk');
 const UserReport = require('../models/UserReport');
-
-// Initialize Gemini safely
-const getGenAI = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'your_gemini_api_key_here') return null;
-  return new GoogleGenerativeAI(apiKey);
-};
 
 async function generateSafetyBriefing(location, travelerType = []) {
   let backgroundData = { destinationContext: null, recentReports: [] };
@@ -71,8 +65,7 @@ Generate a JSON object with EXACTLY these fields:
   "accessibility_notes": [<array of strings tailored SPECIFICALLY to the travelerType. E.g. extra caution for solo, step-free for disabled>]
 }
 `;
-    
-    const result = await model.generateContent(prompt);
+    const result = await withRetryAndTimeout(() => model.generateContent(prompt), 8000, 1);
     const textResult = result.response.text();
     
     // 4. Defensively parse JSON (strip markdown fences if present)
@@ -142,7 +135,7 @@ Generate a JSON object with EXACTLY these fields:
   }
 }
 `;
-    const result = await model.generateContent(prompt);
+    const result = await withRetryAndTimeout(() => model.generateContent(prompt), 8000, 1);
     let jsonText = result.response.text().trim();
     if (jsonText.startsWith('```')) {
       jsonText = jsonText.replace(/^```(?:json)?\n/, '').replace(/\n```$/, '');

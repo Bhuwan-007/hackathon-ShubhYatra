@@ -2,6 +2,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { AuthProvider } from '@/context/AuthContext';
+import { ToastProvider } from '@/context/ToastContext';
 import { Fraunces } from 'next/font/google';
 
 const fraunces = Fraunces({ 
@@ -18,11 +19,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={fraunces.variable}>
       <body className="bg-background-light text-text-main min-h-screen pb-20 md:pb-0">
-        <AuthProvider>
-          <Header />
-          {children}
-          <BottomNav />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Header />
+            {children}
+            <BottomNav />
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

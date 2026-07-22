@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { submitHazardReport } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 import { AlertTriangle, Loader2, CheckCircle } from "lucide-react";
 
 export default function ReportPage() {
@@ -14,6 +15,7 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const toast = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,8 +29,10 @@ export default function ReportPage() {
 
       await submitHazardReport(form);
       setSuccess(true);
+      toast.success("Report submitted successfully!");
     } catch (err) {
       setError(err.message || "Failed to submit report.");
+      toast.error(err.message || "Failed to submit report.");
     } finally {
       setLoading(false);
     }

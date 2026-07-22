@@ -8,9 +8,11 @@ import { ShieldCheck, MapPin, Loader2, UserCheck, Users, MessageCircle, LogOut, 
 import { cn } from "@/lib/utils";
 import ChatView from "@/components/ChatView";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function ConnectPage() {
   const { token, user, isReady, login, logout, updateUserLocationState } = useAuth();
+  const toast = useToast();
   
   // Tab state
   const [activeTab, setActiveTab] = useState("discover"); 
@@ -73,9 +75,11 @@ export default function ConnectPage() {
     setVisibility(newVal);
     try {
       await updateUserVisibility(newVal, token);
+      toast.success(newVal ? "Visibility turned on" : "Visibility turned off");
     } catch (err) {
       setVisibility(!newVal); // revert
       handleAuthError(err);
+      toast.error("Failed to update visibility");
     }
   };
 
@@ -83,7 +87,11 @@ export default function ConnectPage() {
     try {
       await sendBuddyRequest(recipientId, token);
       setNearby(prev => prev.filter(u => u._id !== recipientId));
-    } catch (err) { handleAuthError(err); }
+      toast.success("Buddy request sent!");
+    } catch (err) { 
+      handleAuthError(err); 
+      toast.error("Failed to send request.");
+    }
   };
 
   const handleRespond = async (connectionId, action) => {
@@ -91,7 +99,11 @@ export default function ConnectPage() {
       await respondToBuddyRequest(connectionId, action, token);
       const connData = await fetchMyConnections(token);
       setConnections(connData);
-    } catch (err) { handleAuthError(err); }
+      toast.success(action === 'accept' ? "Request accepted!" : "Request declined.");
+    } catch (err) { 
+      handleAuthError(err); 
+      toast.error("Failed to respond to request.");
+    }
   };
 
   const handleAuthSubmit = async (e) => {
@@ -148,6 +160,7 @@ export default function ConnectPage() {
           
           await updateUserLocation(city, token);
           updateUserLocationState(city);
+          toast.success("Location detected automatically!");
         } catch (err) {
           setLocationError("Failed to auto-detect location. Please enter it manually.");
         } finally {
@@ -168,6 +181,7 @@ export default function ConnectPage() {
     try {
       await updateUserLocation(manualLocation.trim(), token);
       updateUserLocationState(manualLocation.trim());
+      toast.success("Location updated successfully!");
     } catch (err) {
       setLocationError("Failed to save location.");
     } finally {

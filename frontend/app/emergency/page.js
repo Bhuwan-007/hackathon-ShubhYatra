@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { fetchEmergencyPlan } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 import { AlertCircle, Phone, Loader2, Book, Activity, AlertTriangle, Shield, Map } from "lucide-react";
 
 export default function EmergencyPage() {
@@ -9,10 +10,12 @@ export default function EmergencyPage() {
   const [loadingType, setLoadingType] = useState(null);
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState(null);
+  const toast = useToast();
 
   const handleEmergency = async (type) => {
     if (!location.trim()) {
       setError("Please enter your current location first.");
+      toast.error("Please enter your current location first.");
       return;
     }
     setLoadingType(type);
@@ -22,8 +25,10 @@ export default function EmergencyPage() {
     try {
       const data = await fetchEmergencyPlan(location, landmarks, type);
       setPlan(data);
+      toast.success("Emergency plan generated.");
     } catch (err) {
       setError(err.message || "Failed to load emergency plan.");
+      toast.error(err.message || "Failed to load emergency plan.");
     } finally {
       setLoadingType(null);
     }

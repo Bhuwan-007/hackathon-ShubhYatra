@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchBuddyMessages, sendBuddyMessage, shareBuddyLocation } from "@/lib/api";
 import { MapPin, Send, Loader2 } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 
 export default function ChatView({ connection, currentUserId, token, onBack, onAuthError }) {
@@ -10,6 +11,7 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
   const [sending, setSending] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareTimeLeft, setShareTimeLeft] = useState(null);
+  const toast = useToast();
   const chatEndRef = useRef(null);
 
   // Determine who the "other" person is
@@ -74,6 +76,7 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
       setInputText("");
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
+      toast.error("Failed to send message");
       if (onAuthError) onAuthError(err);
     } finally {
       setSending(false);
@@ -88,7 +91,9 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
       // but for this demo, polling will pick up the updated connection eventually, 
       // or we can just artificially set the timer text for instant feedback:
       setShareTimeLeft("4h 0m left");
+      toast.success("Location shared!");
     } catch (err) {
+      toast.error("Failed to share location");
       if (onAuthError) onAuthError(err);
     } finally {
       setSharing(false);

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { scanScamImage } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 import { UploadCloud, Loader2, ShieldAlert, CheckCircle, AlertTriangle, Search } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function ScanPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const toast = useToast();
   
   const fileInputRef = useRef(null);
 
@@ -18,6 +20,7 @@ export default function ScanPage() {
     e.preventDefault();
     if (!file) {
       setError("Please select an image to scan.");
+      toast.error("Please select an image to scan.");
       return;
     }
     
@@ -33,8 +36,10 @@ export default function ScanPage() {
 
       const data = await scanScamImage(formData);
       setResult(data);
+      toast.success("Image scanned successfully!");
     } catch (err) {
       setError(err.message || "Failed to scan image.");
+      toast.error(err.message || "Failed to scan image.");
     } finally {
       setLoading(false);
     }

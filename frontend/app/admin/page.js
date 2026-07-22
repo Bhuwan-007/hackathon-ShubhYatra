@@ -5,11 +5,13 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContaine
 import { Shield, Route, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
   const { user, token, isReady } = useAuth();
   const router = useRouter();
+  const toast = useToast();
 
   const [heatmapData, setHeatmapData] = useState([]);
   const [reports, setReports] = useState([]);
@@ -33,6 +35,7 @@ export default function AdminDashboard() {
       setReports(rawReports);
     } catch (error) {
       console.error("Failed to load admin data", error);
+      toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
@@ -41,9 +44,11 @@ export default function AdminDashboard() {
   const handleVerify = async (id) => {
     try {
       await verifyReport(id, token);
+      toast.success("Report verified successfully");
       loadData(); // Refresh list to show updated status
     } catch (error) {
       console.error("Verification failed", error);
+      toast.error("Failed to verify report");
     }
   };
 

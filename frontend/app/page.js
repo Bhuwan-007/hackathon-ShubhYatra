@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { fetchBriefing, fetchRecentReports } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 import { 
   ShieldAlert, ShieldCheck, MapPin, 
@@ -25,6 +26,7 @@ export default function Home() {
   const [briefing, setBriefing] = useState(null);
   const [recentReports, setRecentReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     const loadRecent = async () => {
@@ -33,6 +35,7 @@ export default function Home() {
         setRecentReports(data);
       } catch (err) {
         console.error("Failed to fetch recent reports", err);
+        toast.error("Failed to fetch live safety pulse.");
       } finally {
         setLoadingReports(false);
       }

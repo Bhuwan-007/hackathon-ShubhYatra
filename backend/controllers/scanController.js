@@ -1,10 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const getGenAI = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'your_gemini_api_key_here') return null;
-  return new GoogleGenerativeAI(apiKey);
-};
+const { getGenAI, withRetryAndTimeout } = require('../utils/geminiHelper');
 
 const getFallbackScanResult = () => {
   return {
@@ -58,8 +53,8 @@ Generate a JSON object with EXACTLY these fields:
 }
 `;
 
-    // Gemini API call (multimodal: prompt + image)
-    const result = await model.generateContent([prompt, imagePart]);
+    // Gemini API call (multimodal: prompt + image) with retry and timeout
+    const result = await withRetryAndTimeout(() => model.generateContent([prompt, imagePart]), 8000, 1);
     const textResult = result.response.text();
     
     // Defensively parse JSON (strip markdown fences if present)
