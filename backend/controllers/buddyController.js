@@ -74,18 +74,36 @@ const respondToRequest = async (req, res) => {
 const shareLocation = async (req, res) => {
   try {
     const { connectionId, durationHours = 4 } = req.body;
+    const userId = req.user.id;
 
     const connection = await BuddyConnection.findById(connectionId);
     if (!connection) return res.status(404).json({ error: 'Connection not found' });
     if (connection.status !== 'accepted') return res.status(403).json({ error: 'Connection not accepted' });
 
-    // Extend shared location time window
-    const sharedLocationUntil = new Date(Date.now() + durationHours * 3600000);
-    connection.sharedLocationUntil = sharedLocationUntil;
+    const isRequester = connection.requesterId.toString() === userId;
+    const isRecipient = connection.recipientId.toString() === userId;
+
+    if (!isRequester && !isRecipient) {
+      return res.status(403).json({ error: 'Unauthorized to modify this connection' });
+    }
+
+    // Extend shared location time window (or clear it if 0)
+    let sharedUntil = null;
+    if (durationHours > 0) {
+      sharedUntil = new Date(Date.now() + durationHours * 3600000);
+    }
+    
+    if (isRequester) {
+      connection.requesterSharedUntil = sharedUntil;
+    } else {
+      connection.recipientSharedUntil = sharedUntil;
+    }
+
     await connection.save();
 
     res.json(connection);
   } catch (error) {
+    console.error('Share location error:', error);
     res.status(500).json({ error: 'Failed to share location' });
   }
 };

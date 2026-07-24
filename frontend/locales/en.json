@@ -24,6 +24,13 @@
   "home.stats.scams": "Scams Detected",
   "home.stats.reports": "Community Reports",
   
+  "chat.back": "Back",
+  "chat.shareLocation": "Share Location (4h)",
+  "chat.stopSharing": "Stop Sharing",
+  "chat.connectionSecure": "Connection secure. Remember to stay in public areas.",
+  "chat.sharingLocation": "is sharing location:",
+  "chat.placeholder": "Message...",
+  
   "briefing.score.title": "Overall Risk Score",
   "briefing.score.subtitle": "Based on recent verified reports",
   "briefing.scams.title": "Active Scams to Watch",

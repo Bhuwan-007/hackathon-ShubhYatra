@@ -24,6 +24,13 @@
   "home.stats.scams": "घोटाले पकड़े गए",
   "home.stats.reports": "सामुदायिक रिपोर्ट",
   
+  "chat.back": "वापस",
+  "chat.shareLocation": "स्थान साझा करें (4 घंटे)",
+  "chat.stopSharing": "साझा करना बंद करें",
+  "chat.connectionSecure": "कनेक्शन सुरक्षित है। सार्वजनिक स्थानों पर रहना याद रखें।",
+  "chat.sharingLocation": "स्थान साझा कर रहा/रही है:",
+  "chat.placeholder": "संदेश...",
+  
   "briefing.score.title": "समग्र जोखिम स्कोर",
   "briefing.score.subtitle": "हाल की सत्यापित रिपोर्टों के आधार पर",
   "briefing.scams.title": "सक्रिय घोटाले",

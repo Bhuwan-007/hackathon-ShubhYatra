@@ -10,7 +10,8 @@ const buddyConnectionSchema = new mongoose.Schema({
   requesterId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile', required: true },
   recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile', required: true },
   status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' },
-  sharedLocationUntil: { type: Date, default: null },
+  requesterSharedUntil: { type: Date, default: null },
+  recipientSharedUntil: { type: Date, default: null },
   messages: [messageSchema]
 }, { timestamps: true });
 

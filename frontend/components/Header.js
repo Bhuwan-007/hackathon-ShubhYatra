@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { Shield, Route, LogOut, User, LayoutDashboard, Globe } from 'lucide-react';
+import { Shield, Route, LogOut, User, LayoutDashboard, Globe, RefreshCw } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -49,7 +49,6 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3 md:ml-4 md:pl-4 md:border-l md:border-white/40">
-            {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
               aria-label="Toggle language"
@@ -57,6 +56,16 @@ export default function Header() {
             >
               <Globe className="w-3 h-3 mr-1 opacity-70" />
               {language === 'en' ? 'HI' : 'EN'}
+            </button>
+
+            {/* Global PWA Refresh Button */}
+            <button
+              onClick={() => window.location.reload()}
+              aria-label="Refresh Page"
+              className="text-text-main/50 hover:text-primary-dark transition-colors bg-white/50 p-1.5 rounded-md shadow-sm border border-white/60 cursor-pointer flex items-center"
+              title="Refresh Data"
+            >
+              <RefreshCw className="w-4 h-4" />
             </button>
 
             {/* Auth State Indicator */}
