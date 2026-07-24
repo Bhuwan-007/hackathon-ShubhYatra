@@ -4,6 +4,7 @@ import BottomNav from '@/components/BottomNav';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import OnboardingNudge from '@/components/OnboardingNudge';
 import { Fraunces } from 'next/font/google';
 
 const fraunces = Fraunces({ 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
               <Header />
               {children}
               <BottomNav />
+              <OnboardingNudge />
             </ToastProvider>
           </AuthProvider>
         </LanguageProvider>

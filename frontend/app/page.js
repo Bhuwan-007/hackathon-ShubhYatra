@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchBriefing, fetchRecentReports } from "@/lib/api";
+import { fetchBriefing, fetchRecentReports, fetchStats } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/lib/utils";
 import { 
   ShieldAlert, ShieldCheck, MapPin, 
   Search, Loader2, AlertTriangle, User,
-  Phone, Activity, Info, ChevronDown, ChevronUp
+  Phone, Activity, Info, ChevronDown, ChevronUp,
+  Globe2, ShieldAlert as ShieldAlertIcon, FileCheck
 } from "lucide-react";
 
 const TRAVELER_TYPES = [
@@ -28,6 +29,7 @@ export default function Home() {
   const [recentReports, setRecentReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [showReasoning, setShowReasoning] = useState(false);
+  const [stats, setStats] = useState(null);
   
   const toast = useToast();
   const { language, t } = useLanguage();
@@ -43,7 +45,18 @@ export default function Home() {
         setLoadingReports(false);
       }
     };
+    
+    const loadStats = async () => {
+      try {
+        const data = await fetchStats();
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to fetch stats", err);
+      }
+    };
+
     loadRecent();
+    loadStats();
   }, []);
 
   // Auto-refetch when language changes if we already have a briefing
@@ -180,6 +193,27 @@ export default function Home() {
             </div>
           </form>
         </div>
+
+        {/* Stats Strip */}
+        {stats && !briefing && !loading && (
+          <div className="grid grid-cols-3 gap-4 mb-12 animate-in fade-in duration-700">
+            <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
+              <Globe2 className="w-5 h-5 text-primary mb-2 opacity-80" />
+              <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.destinations_covered}</span>
+              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Destinations</span>
+            </div>
+            <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
+              <ShieldAlertIcon className="w-5 h-5 text-accent mb-2 opacity-80" />
+              <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.scam_categories}</span>
+              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Scams Detected</span>
+            </div>
+            <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
+              <FileCheck className="w-5 h-5 text-emerald-500 mb-2 opacity-80" />
+              <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.verified_reports}</span>
+              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Community Reports</span>
+            </div>
+          </div>
+        )}
 
         {/* Error State */}
         {error && (

@@ -41,6 +41,7 @@ const reportRoutes = require('./routes/reports');
 const buddyRoutes = require('./routes/buddies');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
+const statsRoutes = require('./routes/stats');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
@@ -49,6 +50,7 @@ app.use('/api/scan-image', scanRoutes);
 app.use('/api/emergency-plan', emergencyRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/buddies', buddyRoutes);
+app.use('/api/stats', statsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

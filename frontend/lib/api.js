@@ -72,6 +72,14 @@ export async function fetchHeatmap() {
   } catch (error) { throw error; }
 }
 
+export async function fetchStats() {
+  try {
+    const response = await fetch(`${API_URL}/stats`);
+    if (!response.ok) throw new Error('Failed to fetch stats.');
+    return await response.json();
+  } catch (error) { throw error; }
+}
+
 export async function fetchRecentReports() {
   try {
     const response = await fetch(`${API_URL}/reports/recent`);
