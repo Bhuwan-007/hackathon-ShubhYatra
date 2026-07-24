@@ -20,6 +20,10 @@
   "home.pulse.title": "Live Safety Pulse",
   "home.pulse.empty": "No recent reports available.",
   
+  "home.stats.destinations": "Destinations",
+  "home.stats.scams": "Scams Detected",
+  "home.stats.reports": "Community Reports",
+  
   "briefing.score.title": "Overall Risk Score",
   "briefing.score.subtitle": "Based on recent verified reports",
   "briefing.scams.title": "Active Scams to Watch",

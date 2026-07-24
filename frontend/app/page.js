@@ -235,17 +235,17 @@ export default function Home() {
             <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
               <Globe2 aria-hidden="true" className="w-5 h-5 text-primary mb-2 opacity-80" />
               <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.destinations_covered}</span>
-              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Destinations</span>
+              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">{t('home.stats.destinations')}</span>
             </div>
             <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
               <ShieldAlertIcon aria-hidden="true" className="w-5 h-5 text-accent mb-2 opacity-80" />
               <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.scam_categories}</span>
-              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Scams Detected</span>
+              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">{t('home.stats.scams')}</span>
             </div>
             <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
               <FileCheck aria-hidden="true" className="w-5 h-5 text-emerald-500 mb-2 opacity-80" />
               <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.verified_reports}</span>
-              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Community Reports</span>
+              <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">{t('home.stats.reports')}</span>
             </div>
           </div>
         )}
@@ -290,7 +290,7 @@ export default function Home() {
                   <div key={report._id} className="min-w-[280px] w-[280px] bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm snap-start flex flex-col">
                     <div className="flex items-start justify-between mb-2">
                       <span className="text-xs font-bold uppercase tracking-wider text-primary-dark bg-primary-dark/10 px-2 py-1 rounded-md">
-                        {report.category}
+                        {t(`report.form.category.${report.category}`) || report.category}
                       </span>
                       {report.severity >= 4 && (
                         <AlertTriangle className="w-4 h-4 text-alert" />

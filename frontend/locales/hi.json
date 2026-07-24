@@ -20,6 +20,10 @@
   "home.pulse.title": "लाइव सुरक्षा पल्स",
   "home.pulse.empty": "कोई हालिया रिपोर्ट उपलब्ध नहीं है।",
   
+  "home.stats.destinations": "गंतव्य",
+  "home.stats.scams": "घोटाले पकड़े गए",
+  "home.stats.reports": "सामुदायिक रिपोर्ट",
+  
   "briefing.score.title": "समग्र जोखिम स्कोर",
   "briefing.score.subtitle": "हाल की सत्यापित रिपोर्टों के आधार पर",
   "briefing.scams.title": "सक्रिय घोटाले",
