@@ -33,6 +33,20 @@ An AI-powered tourist safety platform designed to provide travelers with real-ti
 - Admins can review raw crowdsourced hazard reports and manually verify them.
 - Verified reports carry more weight in the AI's safety briefings and risk calculations.
 
+7. Progressive Web App (PWA) and Offline Support
+- Fully installable PWA for mobile and desktop environments.
+- Caches recent safety briefings locally for offline access when traveling without network coverage.
+- Optimized for mobile displays with safe-area paddings for notches and home indicators.
+
+8. Internationalization (i18n)
+- Dynamic language switching supporting English and Hindi.
+- Translates AI-generated content, static UI elements, and community report categories in real-time.
+
+9. Comprehensive Accessibility (a11y)
+- Meets WCAG AA color contrast standards for readability.
+- Implements strict focus trapping for modals and overlays to support keyboard navigation.
+- Utilizes ARIA labels and hides decorative icons for optimal screen reader compatibility.
+
 ## Folder Structure
 
 - `frontend`: Next.js App Router with Tailwind CSS (JavaScript).
