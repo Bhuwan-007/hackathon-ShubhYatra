@@ -333,8 +333,9 @@ export default function ConnectPage() {
 
   if (activeChat) {
     return (
-      <div className="max-w-2xl mx-auto px-2 sm:px-6 py-4 sm:py-12">
-        <ChatView 
+      <div className="max-w-2xl mx-auto w-full px-2 sm:px-6 py-2 flex-1 flex flex-col relative" style={{ minHeight: '60vh' }}>
+        <div className="absolute inset-x-2 sm:inset-x-6 top-2 bottom-0 md:bottom-8">
+          <ChatView 
           connection={activeChat} 
           currentUserId={user.id} 
           token={token}
@@ -342,6 +343,7 @@ export default function ConnectPage() {
           onAuthError={handleAuthError}
           onRefreshConnection={handleRefreshConnection}
         />
+        </div>
       </div>
     );
   }

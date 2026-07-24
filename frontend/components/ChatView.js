@@ -163,7 +163,7 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
   };
 
   return (
-    <div className="flex flex-col h-[70vh] bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
       
       {/* Header */}
       <div className="border-b border-stone-100 bg-stone-50/50 p-4">
