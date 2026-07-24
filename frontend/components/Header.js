@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import { Shield, Route, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { Shield, Route, LogOut, User, LayoutDashboard, Globe } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -37,10 +37,10 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "transition-colors whitespace-nowrap pb-1",
+                  "text-xs font-bold transition-colors",
                   pathname === link.href
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-main/60 hover:text-text-main"
+                    ? "text-primary-dark border-b-2 border-primary-dark"
+                    : "text-text-main/50 hover:text-text-main/80"
                 )}
               >
                 {link.label}
@@ -52,10 +52,11 @@ export default function Header() {
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="text-xs font-bold text-text-main/70 hover:text-primary transition-colors bg-white/50 px-2 py-1 rounded-md shadow-sm border border-white/60 cursor-pointer flex items-center"
-              title="Toggle Language (English/Hindi)"
+              aria-label="Toggle language"
+              className="text-xs font-bold text-text-main/70 hover:text-primary-dark transition-colors bg-white/50 px-2 py-1 rounded-md shadow-sm border border-white/60 cursor-pointer flex items-center"
             >
-              {language === 'en' ? 'EN / हिंदी' : 'हिंदी / EN'}
+              <Globe className="w-3 h-3 mr-1 opacity-70" />
+              {language === 'en' ? 'HI' : 'EN'}
             </button>
 
             {/* Auth State Indicator */}
@@ -67,8 +68,12 @@ export default function Header() {
                       <User className="w-3 h-3" />
                       <span className="hidden sm:inline">{user.displayName}</span>
                     </span>
-                    <button onClick={logout} className="text-xs font-bold text-text-main/50 hover:text-alert transition-colors" title="Log Out">
-                      <LogOut className="w-4 h-4" />
+                    <button 
+                      onClick={logout} 
+                      aria-label="Logout"
+                      className="text-text-main/50 hover:text-alert transition-colors cursor-pointer ml-1"
+                    >
+                      <LogOut className="w-5 h-5" />
                     </button>
                     {user.isAdmin && (
                       <Link href="/admin" className="text-xs font-bold text-accent hover:text-accent/80 transition-colors flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-md" title="Admin Dashboard">

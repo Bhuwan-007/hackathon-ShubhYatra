@@ -73,7 +73,7 @@ export default function OnboardingNudge() {
             {steps[step].icon}
           </div>
           <div>
-            <div className="text-xs font-bold text-primary tracking-wider uppercase mb-1">
+            <div className="text-xs font-bold text-primary-dark tracking-wider uppercase mb-1">
               Tip {step + 1} of 5
             </div>
             <h4 className="text-white font-bold mb-1">{steps[step].title}</h4>

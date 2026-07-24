@@ -10,11 +10,14 @@ import ChatView from "@/components/ChatView";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useRouter } from "next/navigation";
+import FocusTrap from "focus-trap-react";
 
 export default function ConnectPage() {
   const { token, user, isReady, login, logout, updateUserLocationState } = useAuth();
   const toast = useToast();
   const { language, t } = useLanguage();
+  const router = useRouter();
   
   // Tab state
   const [activeTab, setActiveTab] = useState("discover"); 
@@ -229,6 +232,7 @@ export default function ConnectPage() {
                 />
                 <button 
                   type="button" 
+                  aria-label="Toggle password visibility"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-text-main/40 hover:text-text-main/70 transition-colors cursor-pointer"
                 >
@@ -244,7 +248,7 @@ export default function ConnectPage() {
           </form>
           
           <div className="mt-4">
-            <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer">
+            <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-sm font-bold text-primary-dark hover:text-primary-dark/80 transition-colors cursor-pointer">
               {isLoginMode ? "Need an account? Register" : "Already have an account? Sign In"}
             </button>
           </div>
@@ -264,15 +268,20 @@ export default function ConnectPage() {
   // LOCATION PERMISSION FLOW
   if (!user.currentLocation || user.currentLocation.trim() === "") {
     return (
-      <div className="max-w-md mx-auto px-6 py-20">
-        <div className="bg-white/40 backdrop-blur-xl p-8 rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center">
-          <div className="w-16 h-16 bg-accent/20 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Map className="w-8 h-8" />
-          </div>
-          <h1 className={cn("text-2xl font-bold text-text-main mb-2", displayFontClass)}>{t('connect.loc.title')}</h1>
-          <p className="text-text-main/70 text-sm mb-6 leading-relaxed">
-            {t('connect.loc.subtitle')}
-          </p>
+      <FocusTrap focusTrapOptions={{ clickOutsideDeactivates: true, onDeactivate: () => router.back() }}>
+        <div 
+          className="max-w-md mx-auto px-6 py-20 outline-none" 
+          tabIndex={-1} 
+          onKeyDown={(e) => { if (e.key === 'Escape') router.back(); }}
+        >
+          <div className="bg-white/40 backdrop-blur-xl p-8 rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center">
+            <div className="w-16 h-16 bg-accent/20 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Map className="w-8 h-8" />
+            </div>
+            <h1 className={cn("text-2xl font-bold text-text-main mb-2", displayFontClass)}>{t('connect.loc.title')}</h1>
+            <p className="text-text-main/70 text-sm mb-6 leading-relaxed">
+              {t('connect.loc.subtitle')}
+            </p>
           
           {locationError && <div className="p-3 bg-alert/10 text-alert border border-alert/20 text-sm font-bold rounded-lg mb-4">{locationError}</div>}
 
@@ -305,6 +314,7 @@ export default function ConnectPage() {
           </div>
         </div>
       </div>
+      </FocusTrap>
     );
   }
 
@@ -344,7 +354,7 @@ export default function ConnectPage() {
             <span className="font-bold text-text-main/90">{user.currentLocation}</span>
             <button 
               onClick={() => updateUserLocationState("")} // Clears location to re-trigger flow
-              className="text-primary hover:text-primary/80 font-bold ml-2 underline decoration-primary/30 underline-offset-2 transition-colors cursor-pointer"
+              className="text-primary-dark hover:text-primary-dark/80 font-bold ml-2 underline decoration-primary-dark/30 underline-offset-2 transition-colors cursor-pointer"
             >
               {t('connect.main.update_loc')}
             </button>

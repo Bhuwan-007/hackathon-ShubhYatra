@@ -31,9 +31,10 @@ export default function BottomNav() {
             <Link 
               key={link.href} 
               href={link.href}
+              aria-label={link.label}
               className={cn(
                 "flex flex-col items-center justify-center py-3 px-2 flex-1 transition-all duration-200",
-                isActive ? "text-primary scale-110" : "text-text-main/50 hover:text-text-main"
+                isActive ? "text-primary-dark scale-110" : "text-text-main/50 hover:text-text-main"
               )}
             >
               <Icon className={cn("w-6 h-6 mb-1 transition-colors", isActive ? "stroke-[2.5px]" : "stroke-2")} />

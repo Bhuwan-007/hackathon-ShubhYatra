@@ -5,6 +5,7 @@ import { useToast } from "@/context/ToastContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Phone, Loader2, Book, Activity, AlertTriangle, Shield, Map } from "lucide-react";
+import FocusTrap from "focus-trap-react";
 
 export default function EmergencyPage() {
   const [location, setLocation] = useState("");
@@ -53,7 +54,7 @@ export default function EmergencyPage() {
     <div className="max-w-2xl mx-auto px-6 py-12">
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-alert/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-8 h-8 text-alert" />
+          <AlertCircle aria-hidden="true" className="w-8 h-8 text-alert" />
         </div>
         <h1 className={cn("text-3xl font-bold text-text-main mb-2", displayFontClass)}>{t('emergency.hero.title')}</h1>
         <p className="text-text-main/70">{t('emergency.hero.subtitle')}</p>
@@ -138,7 +139,12 @@ export default function EmergencyPage() {
       )}
 
       {plan && (
-        <div className="bg-white/60 backdrop-blur-2xl rounded-2xl shadow-lg border border-white/80 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+        <FocusTrap focusTrapOptions={{ clickOutsideDeactivates: true, onDeactivate: () => setPlan(null) }}>
+        <div 
+          className="bg-white/60 backdrop-blur-2xl rounded-2xl shadow-lg border border-white/80 overflow-hidden animate-in fade-in slide-in-from-bottom-4 outline-none"
+          tabIndex={-1}
+          onKeyDown={(e) => { if (e.key === 'Escape') setPlan(null); }}
+        >
           <div className="bg-alert text-white p-6 shadow-sm">
             <h2 className={cn("text-2xl font-bold", displayFontClass)}>{t('emergency.plan.title')}</h2>
             <p className="opacity-90 font-medium">Follow these steps calmly.</p>
@@ -160,7 +166,7 @@ export default function EmergencyPage() {
                 <div className="space-y-4">
                   {Object.entries(plan.key_contacts).map(([key, value]) => (
                     <div key={key} className="flex items-center gap-3 bg-white/50 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/60">
-                      <Phone className="w-5 h-5 text-primary shrink-0" />
+                      <Phone aria-hidden="true" className="w-5 h-5 text-primary-dark shrink-0" />
                       <div>
                         <div className="text-xs font-bold text-text-main/60 uppercase tracking-wide">{key.replace('_', ' ')}</div>
                         <div className="font-bold text-text-main">{value}</div>
@@ -176,6 +182,7 @@ export default function EmergencyPage() {
             </button>
           </div>
         </div>
+        </FocusTrap>
       )}
     </div>
   );

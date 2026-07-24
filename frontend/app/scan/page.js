@@ -88,9 +88,9 @@ export default function ScanPage() {
             aria-label={t('scan.form.upload')}
           >
             <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={e => setFile(e.target.files?.[0])} />
-            <UploadCloud className="w-10 h-10 text-text-main/40 mx-auto mb-4" />
+            <UploadCloud aria-hidden="true" className="w-10 h-10 text-text-main/40 mx-auto mb-4" />
             {file ? (
-              <p className="text-primary font-bold">{file.name}</p>
+              <p className="text-primary-dark font-bold">{file.name}</p>
             ) : (
               <p className="text-text-main/60 font-medium">{t('scan.form.upload')} ({t('scan.form.upload_hint')})</p>
             )}
@@ -118,7 +118,7 @@ export default function ScanPage() {
             : "bg-emerald-50/80 border-emerald-200"
         )}>
           <div className="flex items-start gap-4 mb-6">
-            {result.is_suspicious ? <ShieldAlert className="w-10 h-10 text-alert shrink-0" /> : <CheckCircle className="w-10 h-10 text-emerald-600 shrink-0" />}
+            {result.is_suspicious ? <ShieldAlert aria-hidden="true" className="w-10 h-10 text-alert shrink-0" /> : <CheckCircle aria-hidden="true" className="w-10 h-10 text-emerald-600 shrink-0" />}
             <div>
               <h2 className={cn("text-2xl font-bold", displayFontClass, result.is_suspicious ? "text-alert" : "text-emerald-800")}>
                 {result.is_suspicious ? t('scan.result.suspicious') : t('scan.result.legit')}

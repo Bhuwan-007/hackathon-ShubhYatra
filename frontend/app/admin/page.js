@@ -72,8 +72,8 @@ export default function AdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight font-display text-text-main flex items-center gap-2">
               <div className="relative flex items-center justify-center w-8 h-8">
-                <Shield className="w-8 h-8 text-accent absolute" fill="currentColor" />
-                <Route className="w-4 h-4 text-white absolute" strokeWidth={3} />
+                <Shield aria-hidden="true" className="w-8 h-8 text-accent absolute" fill="currentColor" />
+                <Route aria-hidden="true" className="w-4 h-4 text-white absolute" strokeWidth={3} />
               </div>
               ShubhYatra Authority Dashboard
             </h1>
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4">
                       <span className={cn(
                         "px-2.5 py-1 rounded-full text-xs font-bold tracking-wide shadow-sm",
-                        report.status === 'verified' ? "bg-primary/10 text-primary border border-primary/20" : "bg-accent/20 text-accent border border-accent/30"
+                        report.status === 'verified' ? "bg-primary-dark/10 text-primary-dark border border-primary-dark/20" : "bg-accent/20 text-accent border border-accent/30"
                       )}>
                         {report.status.toUpperCase()}
                       </span>

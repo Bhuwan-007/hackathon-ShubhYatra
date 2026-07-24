@@ -182,6 +182,7 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
         />
         <button 
           type="submit" 
+          aria-label="Send message"
           disabled={!inputText.trim() || sending}
           className="w-11 h-11 bg-stone-900 hover:bg-stone-800 text-white rounded-xl flex items-center justify-center transition-colors disabled:opacity-50"
         >

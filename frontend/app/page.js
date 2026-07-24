@@ -9,7 +9,7 @@ import {
   ShieldAlert, ShieldCheck, MapPin, 
   Search, Loader2, AlertTriangle, User,
   Phone, Activity, Info, ChevronDown, ChevronUp,
-  Globe2, ShieldAlert as ShieldAlertIcon, FileCheck
+  Globe2, ShieldAlert as ShieldAlertIcon, FileCheck, WifiOff, Download
 } from "lucide-react";
 
 const TRAVELER_TYPES = [
@@ -30,6 +30,8 @@ export default function Home() {
   const [loadingReports, setLoadingReports] = useState(true);
   const [showReasoning, setShowReasoning] = useState(false);
   const [stats, setStats] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   
   const toast = useToast();
   const { language, t } = useLanguage();
@@ -57,6 +59,17 @@ export default function Home() {
 
     loadRecent();
     loadStats();
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
   // Auto-refetch when language changes if we already have a briefing
@@ -86,8 +99,21 @@ export default function Home() {
       const data = await fetchBriefing(searchLoc, selectedTypes, language);
       setBriefing(data);
       setShowReasoning(false);
+      setIsOffline(false);
+      // Cache successful response
+      localStorage.setItem(`aegis_briefing_${searchLoc.toLowerCase()}`, JSON.stringify(data));
     } catch (err) {
-      setError(t('home.error.fetch'));
+      // Fallback to local storage
+      const cached = localStorage.getItem(`aegis_briefing_${searchLoc.toLowerCase()}`);
+      if (cached) {
+        setBriefing(JSON.parse(cached));
+        setShowReasoning(false);
+        setIsOffline(true);
+        // Cleaned up toast
+      } else {
+        setError(`No cached data for "${searchLoc}", and you are currently offline.`);
+        setIsOffline(false);
+      }
     } finally {
       setLoading(false);
     }
@@ -101,6 +127,14 @@ export default function Home() {
   };
 
   const displayFontClass = language === 'hi' ? 'font-sans' : 'font-display';
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    // Clear prompt regardless of outcome, as it can only be used once
+    setDeferredPrompt(null);
+  };
 
   return (
     <div className="font-sans selection:bg-secondary/50">
@@ -141,6 +175,7 @@ export default function Home() {
                 />
                 <button 
                   type="submit"
+                  aria-label="Search destination"
                   disabled={loading}
                   className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-50 shadow-sm"
                 >
@@ -198,17 +233,17 @@ export default function Home() {
         {stats && !briefing && !loading && (
           <div className="grid grid-cols-3 gap-4 mb-12 animate-in fade-in duration-700">
             <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
-              <Globe2 className="w-5 h-5 text-primary mb-2 opacity-80" />
+              <Globe2 aria-hidden="true" className="w-5 h-5 text-primary mb-2 opacity-80" />
               <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.destinations_covered}</span>
               <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Destinations</span>
             </div>
             <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
-              <ShieldAlertIcon className="w-5 h-5 text-accent mb-2 opacity-80" />
+              <ShieldAlertIcon aria-hidden="true" className="w-5 h-5 text-accent mb-2 opacity-80" />
               <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.scam_categories}</span>
               <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Scams Detected</span>
             </div>
             <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/60 shadow-sm flex flex-col items-center text-center">
-              <FileCheck className="w-5 h-5 text-emerald-500 mb-2 opacity-80" />
+              <FileCheck aria-hidden="true" className="w-5 h-5 text-emerald-500 mb-2 opacity-80" />
               <span className="text-2xl font-bold font-display text-text-main leading-none">{stats.verified_reports}</span>
               <span className="text-[10px] uppercase font-bold text-text-main/60 tracking-wider mt-1">Community Reports</span>
             </div>
@@ -239,7 +274,7 @@ export default function Home() {
         {!briefing && !loading && (
           <div className="mt-12 animate-in fade-in duration-500">
             <h2 className={cn("text-xl font-bold text-text-main mb-6 flex items-center gap-2", displayFontClass)}>
-              <Activity className="w-5 h-5 text-accent" />
+              <Activity aria-hidden="true" className="w-5 h-5 text-accent" />
               {t('home.pulse.title')}
             </h2>
             
@@ -254,7 +289,7 @@ export default function Home() {
                 {recentReports.map(report => (
                   <div key={report._id} className="min-w-[280px] w-[280px] bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white/60 shadow-sm snap-start flex flex-col">
                     <div className="flex items-start justify-between mb-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded-md">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary-dark bg-primary-dark/10 px-2 py-1 rounded-md">
                         {report.category}
                       </span>
                       {report.severity >= 4 && (
@@ -274,6 +309,18 @@ export default function Home() {
             ) : (
               <p className="text-sm text-text-main/50">{t('home.pulse.empty')}</p>
             )}
+
+            {deferredPrompt && (
+              <div className="mt-8 flex justify-center">
+                <button 
+                  onClick={handleInstallClick}
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition-all"
+                >
+                  <Download className="w-4 h-4" />
+                  Install ShubhYatra App
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -281,12 +328,19 @@ export default function Home() {
         {briefing && !loading && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
+            {isOffline && (
+              <div className="bg-alert/10 border border-alert/20 text-alert p-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold shadow-sm">
+                <WifiOff className="w-4 h-4" />
+                You're offline — showing last saved briefing for "{briefing.location || location}".
+              </div>
+            )}
+
             {/* Risk Score Widget */}
             <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 overflow-hidden">
               <div className="p-6 flex flex-col sm:flex-row gap-4 items-center justify-between text-center sm:text-left">
                 <div>
                   <h2 className={cn("text-xl font-bold text-text-main flex items-center justify-center sm:justify-start gap-2", displayFontClass)}>
-                    <Activity className="w-5 h-5 text-primary" />
+                    <Activity aria-hidden="true" className="w-5 h-5 text-primary" />
                     {t('briefing.score.title')}
                   </h2>
                   <p className="text-sm text-text-main/60 mt-1">{t('briefing.score.subtitle')}</p>
@@ -306,10 +360,11 @@ export default function Home() {
                 <div className="border-t border-white/40 bg-white/20">
                   <button 
                     onClick={() => setShowReasoning(!showReasoning)}
+                    aria-label="Toggle reasoning"
                     className="w-full px-6 py-3 flex items-center justify-center sm:justify-between text-xs font-bold text-text-main/60 hover:text-text-main/80 hover:bg-white/30 transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Info className="w-3.5 h-3.5" />
+                      <Info aria-hidden="true" className="w-3.5 h-3.5" />
                       {t('briefing.reasoning.button')}
                     </span>
                     {showReasoning ? <ChevronUp className="w-4 h-4 hidden sm:block" /> : <ChevronDown className="w-4 h-4 hidden sm:block" />}
@@ -335,7 +390,7 @@ export default function Home() {
               {/* Active Scams */}
               <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 p-6">
                 <h3 className={cn("text-lg font-bold text-text-main flex items-center gap-2 mb-4", displayFontClass)}>
-                  <ShieldAlert className="w-5 h-5 text-accent" />
+                  <ShieldAlert aria-hidden="true" className="w-5 h-5 text-accent" />
                   {t('briefing.scams.title')}
                 </h3>
                 {briefing.active_scams?.length > 0 ? (
@@ -355,7 +410,7 @@ export default function Home() {
               {/* Safe Zones */}
               <div className="bg-white/40 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 p-6">
                 <h3 className={cn("text-lg font-bold text-text-main flex items-center gap-2 mb-4", displayFontClass)}>
-                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                  <ShieldCheck aria-hidden="true" className="w-5 h-5 text-emerald-500" />
                   {t('briefing.safezones.title')}
                 </h3>
                 {briefing.safe_zones?.length > 0 ? (
@@ -377,7 +432,7 @@ export default function Home() {
             {briefing.accessibility_notes?.length > 0 && (
               <div className="bg-secondary/30 backdrop-blur-xl rounded-2xl border border-secondary/50 p-6 shadow-sm">
                 <h3 className={cn("text-lg font-bold text-text-main flex items-center gap-2 mb-4", displayFontClass)}>
-                  <Info className="w-5 h-5 text-primary" />
+                  <Info aria-hidden="true" className="w-5 h-5 text-primary" />
                   {t('briefing.advice.title')}
                 </h3>
                 <ul className="space-y-3">
@@ -394,7 +449,7 @@ export default function Home() {
             {/* Emergency Contacts */}
             <div className="bg-background-dark rounded-2xl shadow-xl p-6 text-background-light overflow-hidden relative">
               <h3 className={cn("text-lg font-bold flex items-center gap-2 mb-6 text-background-light relative z-10", displayFontClass)}>
-                <Phone className="w-5 h-5 text-primary" />
+                <Phone aria-hidden="true" className="w-5 h-5 text-primary" />
                 {t('briefing.emergency.title')}
               </h3>
               <div className="grid sm:grid-cols-3 gap-6 relative z-10">

@@ -15,6 +15,22 @@ const fraunces = Fraunces({
 export const metadata = {
   title: 'ShubhYatra | AI Tourist Safety',
   description: 'AI-powered tourist safety platform.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ShubhYatra',
+  },
+  icons: {
+    apple: '/icon-192x192.png',
+  }
+};
+
+export const viewport = {
+  themeColor: '#E8735F',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {
