@@ -112,6 +112,19 @@ export default function ConnectPage() {
     }
   };
 
+  const handleRefreshConnection = async () => {
+    try {
+      const connData = await fetchMyConnections(token);
+      setConnections(connData);
+      if (activeChat) {
+        const updated = connData.find(c => c._id === activeChat._id);
+        if (updated) setActiveChat(updated);
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
     setAuthError("");
@@ -301,7 +314,7 @@ export default function ConnectPage() {
                 placeholder={t('connect.loc.manual')}
                 value={manualLocation}
                 onChange={(e) => setManualLocation(e.target.value)}
-                className="flex-1 px-4 py-2 bg-white/50 border border-white/50 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-inner placeholder:text-text-main/40 transition-all"
+                className="flex-1 px-4 py-2 bg-white/50 border border-white/50 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base shadow-inner placeholder:text-text-main/40 transition-all"
               />
               <button 
                 type="submit" 
@@ -320,13 +333,14 @@ export default function ConnectPage() {
 
   if (activeChat) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-12">
+      <div className="max-w-2xl mx-auto px-2 sm:px-6 py-4 sm:py-12">
         <ChatView 
           connection={activeChat} 
           currentUserId={user.id} 
           token={token}
           onBack={() => setActiveChat(null)} 
           onAuthError={handleAuthError}
+          onRefreshConnection={handleRefreshConnection}
         />
       </div>
     );

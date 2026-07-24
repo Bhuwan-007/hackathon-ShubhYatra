@@ -6,7 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/lib/utils";
 
-export default function ChatView({ connection, currentUserId, token, onBack, onAuthError }) {
+export default function ChatView({ connection, currentUserId, token, onBack, onAuthError, onRefreshConnection }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
@@ -57,7 +57,10 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
     };
 
     loadMessages(true); // Initial load
-    intervalId = setInterval(() => loadMessages(false), 3000); // Poll every 3 seconds
+    intervalId = setInterval(() => {
+      loadMessages(false);
+      if (onRefreshConnection) onRefreshConnection();
+    }, 3000); // Poll every 3 seconds
 
     return () => clearInterval(intervalId);
   }, [connection._id, refreshTrigger]);
@@ -154,8 +157,13 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
     }
   };
 
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+    if (onRefreshConnection) onRefreshConnection();
+  };
+
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
+    <div className="flex flex-col h-[70vh] bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
       
       {/* Header */}
       <div className="border-b border-stone-100 bg-stone-50/50 p-4">
@@ -167,17 +175,17 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
             <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">
               {buddy.displayName?.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h3 className="font-bold text-stone-900">{buddy.displayName}</h3>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-stone-900 truncate">{buddy.displayName}</h3>
               <p className="text-xs text-stone-500 flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> {buddy.currentLocation}
+                <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{buddy.currentLocation}</span>
               </p>
             </div>
           </div>
           
           <div className="flex-shrink-0 flex items-center gap-2">
             <button 
-              onClick={() => setRefreshTrigger(prev => prev + 1)}
+              onClick={handleRefresh}
               aria-label="Refresh Chat"
               className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg transition-colors shadow-sm cursor-pointer"
             >
@@ -207,10 +215,10 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
 
         {/* Location Reveal Bar (If Buddy is sharing with you) */}
         {buddyShareTimeLeft && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 flex items-center gap-2 text-sm text-emerald-800 animate-in fade-in mt-2">
+          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 flex items-center gap-2 text-sm text-emerald-800 animate-in fade-in mt-2 overflow-hidden">
             <MapPin className="w-4 h-4 shrink-0" />
-            <span className="font-medium truncate">{buddy.displayName} {t('chat.sharingLocation')} {buddy.currentLocation}</span>
-            <span className="ml-auto text-xs font-bold text-emerald-600/60 whitespace-nowrap">{buddyShareTimeLeft}</span>
+            <span className="font-medium truncate flex-1 min-w-0">{buddy.displayName} {t('chat.sharingLocation')} {buddy.currentLocation}</span>
+            <span className="shrink-0 ml-auto text-xs font-bold text-emerald-600/60 whitespace-nowrap">{buddyShareTimeLeft}</span>
           </div>
         )}
       </div>
@@ -244,7 +252,7 @@ export default function ChatView({ connection, currentUserId, token, onBack, onA
         <input 
           type="text" 
           placeholder={t('chat.placeholder')}
-          className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+          className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base"
           value={inputText}
           onChange={e => setInputText(e.target.value)}
         />
